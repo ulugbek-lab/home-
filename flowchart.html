@@ -1,0 +1,130 @@
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import ReactFlow, {
+  addEdge,
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+} from "reactflow";
+import "reactflow/dist/style.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
+
+const initialNodes = [
+  { id: "1", type: "input", position: { x: 250, y: 5 }, data: { label: "Supplier" } },
+  { id: "2", position: { x: 100, y: 100 }, data: { label: "Warehouse" } },
+  { id: "3", position: { x: 400, y: 100 }, data: { label: "Distribution" } },
+  { id: "4", type: "output", position: { x: 250, y: 200 }, data: { label: "Retail" } },
+  { id: "5", position: { x: 150, y: 300 }, data: { label: "Sorting" } },
+  { id: "6", position: { x: 350, y: 300 }, data: { label: "Packing" } },
+  { id: "7", position: { x: 250, y: 400 }, data: { label: "Transportation" } },
+];
+
+const initialEdges = [
+  { id: "e1-2", source: "1", target: "2" },
+  { id: "e2-3", source: "2", target: "3" },
+  { id: "e3-4", source: "3", target: "4" },
+  { id: "e2-5", source: "2", target: "5" },
+  { id: "e5-6", source: "5", target: "6" },
+  { id: "e6-7", source: "6", target: "7" },
+  { id: "e7-4", source: "7", target: "4" },
+];
+
+export default function LogisticsFlowchart() {
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [nodeLabel, setNodeLabel] = useState("");
+  const flowRef = useRef(null);
+
+  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+
+  const addNode = () => {
+    if (!nodeLabel) return;
+    const newNode = {
+      id: uuidv4(),
+      position: { x: Math.random() * 400, y: Math.random() * 400 },
+      data: { label: nodeLabel },
+    };
+    setNodes((nds) => [...nds, newNode]);
+    setNodeLabel("");
+  };
+
+  const exportAsImage = async () => {
+    if (!flowRef.current) return;
+    try {
+      const canvas = await html2canvas(flowRef.current, { scale: 3, useCORS: true });
+      const link = document.createElement("a");
+      link.href = canvas.toDataURL("image/png");
+      link.download = "logistics-flowchart.png";
+      link.click();
+    } catch (error) {
+      console.error("Error exporting as PNG:", error);
+    }
+  };
+
+  const exportAsPDF = async () => {
+    if (!flowRef.current) return;
+    try {
+      const canvas = await html2canvas(flowRef.current, { scale: 3, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("l", "mm", "a4");
+      pdf.addImage(imgData, "PNG", 10, 10, 280, 150);
+      pdf.save("logistics-flowchart.pdf");
+    } catch (error) {
+      console.error("Error exporting as PDF:", error);
+    }
+  };
+
+  const saveToDatabase = async () => {
+    try {
+      const response = await axios.post("/api/save-flowchart", { nodes, edges }, {
+        headers: { "Content-Type": "application/json" },
+      });
+      if (response.status === 200) {
+        alert("Flowchart saved successfully!");
+      } else {
+        throw new Error(`Unexpected response status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Error saving flowchart:", error);
+      alert(`Failed to save flowchart: ${error.response?.data?.message || error.message || "Unknown error occurred."}`);
+    }
+  };
+
+  useEffect(() => {
+    if (!flowRef.current) {
+      console.warn("flowRef is not properly attached.");
+    }
+  }, []);
+
+  return (
+    <div className="h-screen w-full p-4 bg-gray-100 flex flex-col">
+      <div className="flex space-x-4 mb-2">
+        <Input value={nodeLabel} onChange={(e) => setNodeLabel(e.target.value)} placeholder="Enter node label" />
+        <Button onClick={addNode}>Add Node</Button>
+        <Button onClick={exportAsImage}>Export as PNG</Button>
+        <Button onClick={exportAsPDF}>Export as PDF</Button>
+        <Button onClick={saveToDatabase}>Save to Database</Button>
+      </div>
+      <div ref={flowRef} className="flex-1 border border-gray-300 rounded-md react-flow">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          fitView
+        >
+          <MiniMap />
+          <Controls />
+          <Background />
+        </ReactFlow>
+      </div>
+    </div>
+  );
+}
