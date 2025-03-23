@@ -1,75 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Main Dashboard of Beki</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Main Dashboard of Beki</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header Section -->
-        <header>
-            <div class="profile-info">
-                <h1>Ulugbek</h1>
-                <span class="id-badge">ID: 2217841</span>
-            </div>
-            <div class="theme-toggle">
-                <i class="fas fa-moon"></i>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <main>
-            <!-- Assignments Section -->
-            <section class="assignments-section">
-                <h2>My Assignments <i class="fas fa-tasks"></i></h2>
-                
-                <div class="upload-container">
-                    <div class="upload-area" id="uploadArea">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Drag & Drop files or</p>
-                        <label for="fileUpload" class="upload-btn">Browse Files</label>
-                        <input type="file" id="fileUpload" multiple hidden>
-                    </div>
-                    
-                    <div class="url-input">
-                        <input type="text" id="linkInput" placeholder="Enter assignment URL...">
-                        <button id="addLinkBtn">Add Link</button>
-                    </div>
-                </div>
-
-                <div class="assignments-list" id="assignmentsList">
-                    <!-- Assignment items will be added here dynamically -->
-                </div>
-            </section>
-        </main>
-
-        <!-- Comments Section -->
-        <section class="comments-section">
-            <h2>Comments <i class="fas fa-comments"></i></h2>
-            
-            <div class="comment-form">
-                <input type="text" id="commenterName" placeholder="Your Name">
-                <textarea id="commentText" placeholder="Leave your comment..."></textarea>
-                <button id="submitComment">Submit Comment</button>
-            </div>
-            
-            <div class="comments-list" id="commentsList">
-                <!-- Comments will be added here dynamically -->
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <p>&copy; 2025 Main Dashboard of Beki. All rights reserved.</p>
-        </footer>
+  <div class="container">
+    <header>
+      <div class="profile-info">
+        <h1>Ulugbek</h1>
+        <p class="id-badge">ID: 2217841</p>
+      </div>
+      <div class="theme-toggle">
+        <button id="themeToggle">Toggle Theme</button>
+      </div>
+    </header>
+    <main>
+      <section class="assignments-section" id="assignmentsSection">
+        <h2>Assignments</h2>
+        <div class="upload-area">
+          <div class="upload-container" id="uploadContainer">
+            <p>Drag & drop files or click to upload</p>
+            <input type="file" id="fileUpload" multiple>
+          </div>
+          <div class="url-input">
+            <input type="text" id="linkInput" placeholder="Paste a link to your assignment...">
+            <button id="addLinkBtn">Add Link</button>
+          </div>
+        </div>
+        <div class="assignments-list" id="assignmentsList">
+          <!-- Assignments will be added here dynamically -->
+        </div>
+      </section>
+    </main>
+    <section class="comments-section">
+      <h2>Comments</h2>
+      <div class="comments-container">
+        <div class="comments-list" id="commentsList">
+          <!-- Comments will be added here dynamically -->
+        </div>
+        <div class="add-comment">
+          <input type="text" id="commenterName" placeholder="Your name">
+          <textarea id="commentText" placeholder="Leave your comment here..."></textarea>
+          <button id="addCommentBtn">Post Comment</button>
+        </div>
+      </div>
+    </section>
+    <footer>
+      <p>Main Dashboard of Beki © 2025</p>
+    </footer>
+  </div>
+  <div class="congrats-overlay" id="congratsOverlay">
+    <div class="congrats-content">
+      <h3>Congratulations!</h3>
+      <p>Assignment has been graded successfully!</p>
+      <div class="fireworks">
+        <div class="firework"></div>
+        <div class="firework"></div>
+        <div class="firework"></div>
+      </div>
     </div>
-
-    <!-- Confetti Animation Container -->
-    <div id="confetti-container" class="confetti-container"></div>
-
-    <script src="script.js"></script>
+  </div>
+  <script src="script.js"></script>
 </body>
 </html>
