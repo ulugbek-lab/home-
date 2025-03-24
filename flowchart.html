@@ -1,130 +1,698 @@
-import React, { useState, useCallback, useRef, useEffect } from "react";
-import ReactFlow, {
-  addEdge,
-  Background,
-  Controls,
-  MiniMap,
-  useNodesState,
-  useEdgesState,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
-import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
-
-const initialNodes = [
-  { id: "1", type: "input", position: { x: 250, y: 5 }, data: { label: "Supplier" } },
-  { id: "2", position: { x: 100, y: 100 }, data: { label: "Warehouse" } },
-  { id: "3", position: { x: 400, y: 100 }, data: { label: "Distribution" } },
-  { id: "4", type: "output", position: { x: 250, y: 200 }, data: { label: "Retail" } },
-  { id: "5", position: { x: 150, y: 300 }, data: { label: "Sorting" } },
-  { id: "6", position: { x: 350, y: 300 }, data: { label: "Packing" } },
-  { id: "7", position: { x: 250, y: 400 }, data: { label: "Transportation" } },
-];
-
-const initialEdges = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e2-3", source: "2", target: "3" },
-  { id: "e3-4", source: "3", target: "4" },
-  { id: "e2-5", source: "2", target: "5" },
-  { id: "e5-6", source: "5", target: "6" },
-  { id: "e6-7", source: "6", target: "7" },
-  { id: "e7-4", source: "7", target: "4" },
-];
-
-export default function LogisticsFlowchart() {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [nodeLabel, setNodeLabel] = useState("");
-  const flowRef = useRef(null);
-
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
-
-  const addNode = () => {
-    if (!nodeLabel) return;
-    const newNode = {
-      id: uuidv4(),
-      position: { x: Math.random() * 400, y: Math.random() * 400 },
-      data: { label: nodeLabel },
-    };
-    setNodes((nds) => [...nds, newNode]);
-    setNodeLabel("");
-  };
-
-  const exportAsImage = async () => {
-    if (!flowRef.current) return;
-    try {
-      const canvas = await html2canvas(flowRef.current, { scale: 3, useCORS: true });
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = "logistics-flowchart.png";
-      link.click();
-    } catch (error) {
-      console.error("Error exporting as PNG:", error);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logistics Flowchart</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
-  };
 
-  const exportAsPDF = async () => {
-    if (!flowRef.current) return;
-    try {
-      const canvas = await html2canvas(flowRef.current, { scale: 3, useCORS: true });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("l", "mm", "a4");
-      pdf.addImage(imgData, "PNG", 10, 10, 280, 150);
-      pdf.save("logistics-flowchart.pdf");
-    } catch (error) {
-      console.error("Error exporting as PDF:", error);
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+      background-color: #f3f4f6;
+      height: 100vh;
+      overflow: hidden;
     }
-  };
 
-  const saveToDatabase = async () => {
-    try {
-      const response = await axios.post("/api/save-flowchart", { nodes, edges }, {
-        headers: { "Content-Type": "application/json" },
-      });
-      if (response.status === 200) {
-        alert("Flowchart saved successfully!");
-      } else {
-        throw new Error(`Unexpected response status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Error saving flowchart:", error);
-      alert(`Failed to save flowchart: ${error.response?.data?.message || error.message || "Unknown error occurred."}`);
+    .container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+      padding: 1rem;
     }
-  };
 
-  useEffect(() => {
-    if (!flowRef.current) {
-      console.warn("flowRef is not properly attached.");
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+      flex-wrap: wrap;
     }
-  }, []);
 
-  return (
-    <div className="h-screen w-full p-4 bg-gray-100 flex flex-col">
-      <div className="flex space-x-4 mb-2">
-        <Input value={nodeLabel} onChange={(e) => setNodeLabel(e.target.value)} placeholder="Enter node label" />
-        <Button onClick={addNode}>Add Node</Button>
-        <Button onClick={exportAsImage}>Export as PNG</Button>
-        <Button onClick={exportAsPDF}>Export as PDF</Button>
-        <Button onClick={saveToDatabase}>Save to Database</Button>
+    .button {
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .button:hover {
+      background-color: #2563eb;
+    }
+
+    .input {
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+      flex-grow: 1;
+      min-width: 200px;
+    }
+
+    .flowchart-container {
+      position: relative;
+      flex-grow: 1;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      background-color: white;
+      overflow: hidden;
+    }
+
+    .flowchart {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .node {
+      position: absolute;
+      min-width: 120px;
+      padding: 0.75rem;
+      background-color: white;
+      border: 1px solid #94a3b8;
+      border-radius: 0.25rem;
+      text-align: center;
+      cursor: move;
+      user-select: none;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      z-index: 2;
+    }
+
+    .node.input {
+      background-color: #dbeafe;
+      border-color: #3b82f6;
+    }
+
+    .node.output {
+      background-color: #dcfce7;
+      border-color: #22c55e;
+    }
+
+    .canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      z-index: 3;
+    }
+
+    .controls button {
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: white;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .minimap {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      width: 150px;
+      height: 100px;
+      border: 1px solid #d1d5db;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 0.25rem;
+      z-index: 3;
+      overflow: hidden;
+    }
+
+    .minimap-content {
+      transform-origin: top left;
+      position: relative;
+    }
+
+    .minimap-node {
+      position: absolute;
+      background-color: rgba(59, 130, 246, 0.5);
+      border-radius: 2px;
+    }
+
+    .background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(#d1d5db 1px, transparent 1px);
+      background-size: 20px 20px;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="toolbar">
+      <input type="text" id="nodeLabel" class="input" placeholder="Enter node label">
+      <button id="addNodeBtn" class="button">Add Node</button>
+      <button id="exportPngBtn" class="button">Export as PNG</button>
+      <button id="exportPdfBtn" class="button">Export as PDF</button>
+      <button id="saveToDbBtn" class="button">Save to Database</button>
+    </div>
+    <div id="flowchartContainer" class="flowchart-container">
+      <div id="flowchart" class="flowchart">
+        <div class="background"></div>
+        <canvas id="edgesCanvas" class="canvas"></canvas>
+        <!-- Nodes will be added here by JavaScript -->
       </div>
-      <div ref={flowRef} className="flex-1 border border-gray-300 rounded-md react-flow">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          fitView
-        >
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
+      <div class="controls">
+        <button id="zoomInBtn">+</button>
+        <button id="zoomOutBtn">-</button>
+        <button id="resetViewBtn">⟳</button>
+      </div>
+      <div class="minimap">
+        <div id="minimapContent" class="minimap-content">
+          <!-- Minimap nodes will be added here by JavaScript -->
+        </div>
       </div>
     </div>
-  );
-}
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <script>
+    // Define initial data
+    const initialNodes = [
+      { id: "1", type: "input", position: { x: 250, y: 5 }, data: { label: "Supplier" } },
+      { id: "2", position: { x: 100, y: 100 }, data: { label: "Warehouse" } },
+      { id: "3", position: { x: 400, y: 100 }, data: { label: "Distribution" } },
+      { id: "4", type: "output", position: { x: 250, y: 200 }, data: { label: "Retail" } },
+      { id: "5", position: { x: 150, y: 300 }, data: { label: "Sorting" } },
+      { id: "6", position: { x: 350, y: 300 }, data: { label: "Packing" } },
+      { id: "7", position: { x: 250, y: 400 }, data: { label: "Transportation" } },
+    ];
+
+    const initialEdges = [
+      { id: "e1-2", source: "1", target: "2" },
+      { id: "e2-3", source: "2", target: "3" },
+      { id: "e3-4", source: "3", target: "4" },
+      { id: "e2-5", source: "2", target: "5" },
+      { id: "e5-6", source: "5", target: "6" },
+      { id: "e6-7", source: "6", target: "7" },
+      { id: "e7-4", source: "7", target: "4" },
+    ];
+
+    // State variables
+    let nodes = [...initialNodes];
+    let edges = [...initialEdges];
+    let selectedNode = null;
+    let isDragging = false;
+    let dragOffset = { x: 0, y: 0 };
+    let scale = 1;
+    let offset = { x: 0, y: 0 };
+    let canvas, ctx;
+
+    // DOM elements
+    const flowchart = document.getElementById('flowchart');
+    const flowchartContainer = document.getElementById('flowchartContainer');
+    const nodeLabelInput = document.getElementById('nodeLabel');
+    const addNodeBtn = document.getElementById('addNodeBtn');
+    const exportPngBtn = document.getElementById('exportPngBtn');
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    const saveToDbBtn = document.getElementById('saveToDbBtn');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const resetViewBtn = document.getElementById('resetViewBtn');
+    const minimapContent = document.getElementById('minimapContent');
+
+    // Setup canvas
+    function initializeCanvas() {
+      canvas = document.getElementById('edgesCanvas');
+      ctx = canvas.getContext('2d');
+      resizeCanvas();
+      window.addEventListener('resize', resizeCanvas);
+    }
+
+    function resizeCanvas() {
+      canvas.width = flowchartContainer.clientWidth;
+      canvas.height = flowchartContainer.clientHeight;
+      renderEdges();
+    }
+
+    // Generate unique ID
+    function generateId() {
+      return 'id-' + Math.random().toString(36).substr(2, 9);
+    }
+
+    // Render functions
+    function renderNodes() {
+      // Remove existing nodes
+      document.querySelectorAll('.node').forEach(node => node.remove());
+      
+      // Create and append nodes
+      nodes.forEach(node => {
+        const nodeElement = document.createElement('div');
+        nodeElement.className = `node ${node.type || ''}`;
+        nodeElement.id = node.id;
+        nodeElement.textContent = node.data.label;
+        nodeElement.style.left = `${node.position.x + offset.x}px`;
+        nodeElement.style.top = `${node.position.y + offset.y}px`;
+        nodeElement.style.transform = `scale(${scale})`;
+        
+        // Add event listeners for dragging
+        nodeElement.addEventListener('mousedown', (e) => {
+          selectedNode = node;
+          isDragging = true;
+          dragOffset.x = e.clientX - (node.position.x + offset.x);
+          dragOffset.y = e.clientY - (node.position.y + offset.y);
+          
+          // Bring node to front
+          nodeElement.style.zIndex = '10';
+        });
+        
+        flowchart.appendChild(nodeElement);
+      });
+    }
+
+    function renderEdges() {
+      if (!ctx) return;
+      
+      // Clear canvas
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw edges
+      edges.forEach(edge => {
+        const sourceNode = nodes.find(n => n.id === edge.source);
+        const targetNode = nodes.find(n => n.id === edge.target);
+        
+        if (sourceNode && targetNode) {
+          const sourceX = sourceNode.position.x + offset.x + 60; // Approximate center
+          const sourceY = sourceNode.position.y + offset.y + 25; // Approximate center
+          const targetX = targetNode.position.x + offset.x + 60; // Approximate center
+          const targetY = targetNode.position.y + offset.y + 25; // Approximate center
+          
+          // Draw the line
+          ctx.beginPath();
+          ctx.moveTo(sourceX, sourceY);
+          ctx.lineTo(targetX, targetY);
+          ctx.strokeStyle = '#94a3b8';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          
+          // Draw arrow
+          const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
+          const arrowLength = 10;
+          
+          ctx.beginPath();
+          ctx.moveTo(targetX, targetY);
+          ctx.lineTo(
+            targetX - arrowLength * Math.cos(angle - Math.PI / 6),
+            targetY - arrowLength * Math.sin(angle - Math.PI / 6)
+          );
+          ctx.lineTo(
+            targetX - arrowLength * Math.cos(angle + Math.PI / 6),
+            targetY - arrowLength * Math.sin(angle + Math.PI / 6)
+          );
+          ctx.closePath();
+          ctx.fillStyle = '#94a3b8';
+          ctx.fill();
+        }
+      });
+    }
+
+    function renderMinimap() {
+      // Clear minimap
+      minimapContent.innerHTML = '';
+      
+      // Calculate bounds
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      
+      nodes.forEach(node => {
+        minX = Math.min(minX, node.position.x);
+        minY = Math.min(minY, node.position.y);
+        maxX = Math.max(maxX, node.position.x + 120);
+        maxY = Math.max(maxY, node.position.y + 50);
+      });
+      
+      const width = maxX - minX + 100;
+      const height = maxY - minY + 100;
+      const scale = Math.min(150 / width, 100 / height);
+      
+      // Set minimap content transformation
+      minimapContent.style.transform = `scale(${scale})`;
+      
+      // Create minimap nodes
+      nodes.forEach(node => {
+        const nodeElement = document.createElement('div');
+        nodeElement.className = 'minimap-node';
+        nodeElement.style.left = `${node.position.x - minX + 50}px`;
+        nodeElement.style.top = `${node.position.y - minY + 50}px`;
+        nodeElement.style.width = '120px';
+        nodeElement.style.height = '50px';
+        
+        minimapContent.appendChild(nodeElement);
+      });
+    }
+
+    // Initialize the flowchart
+    function initializeFlowchart() {
+      initializeCanvas();
+      renderNodes();
+      renderEdges();
+      renderMinimap();
+      
+      // Add global mouse event listeners
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', () => {
+        if (selectedNode && isDragging) {
+          document.getElementById(selectedNode.id).style.zIndex = '2';
+        }
+        selectedNode = null;
+        isDragging = false;
+      });
+      
+      // Zoom controls
+      zoomInBtn.addEventListener('click', () => {
+        scale = Math.min(scale + 0.1, 2);
+        updateTransform();
+      });
+      
+      zoomOutBtn.addEventListener('click', () => {
+        scale = Math.max(scale - 0.1, 0.5);
+        updateTransform();
+      });
+      
+      resetViewBtn.addEventListener('click', () => {
+        scale = 1;
+        offset = { x: 0, y: 0 };
+        updateTransform();
+      });
+      
+      // Add Node button
+      addNodeBtn.addEventListener('click', addNode);
+      
+      // Export buttons
+      exportPngBtn.addEventListener('click', exportAsImage);
+      exportPdfBtn.addEventListener('click', exportAsPDF);
+      saveToDbBtn.addEventListener('click', saveToDatabase);
+    }
+
+    function handleMouseMove(e) {
+      if (isDragging && selectedNode) {
+        const newX = e.clientX - dragOffset.x - offset.x;
+        const newY = e.clientY - dragOffset.y - offset.y;
+        
+        // Update node position
+        selectedNode.position.x = newX;
+        selectedNode.position.y = newY;
+        
+        // Update node element position
+        const nodeElement = document.getElementById(selectedNode.id);
+        nodeElement.style.left = `${newX + offset.x}px`;
+        nodeElement.style.top = `${newY + offset.y}px`;
+        
+        // Re-render edges and minimap
+        renderEdges();
+        renderMinimap();
+      }
+    }
+
+    function updateTransform() {
+      // Update nodes transform
+      document.querySelectorAll('.node').forEach(node => {
+        const nodeData = nodes.find(n => n.id === node.id);
+        node.style.left = `${nodeData.position.x + offset.x}px`;
+        node.style.top = `${nodeData.position.y + offset.y}px`;
+        node.style.transform = `scale(${scale})`;
+      });
+      
+      // Re-render edges and minimap
+      renderEdges();
+      renderMinimap();
+    }
+
+    function addNode() {
+      const label = nodeLabelInput.value.trim();
+      if (!label) return;
+      
+      const newNode = {
+        id: generateId(),
+        position: {
+          x: Math.random() * 400,
+          y: Math.random() * 400
+        },
+        data: { label }
+      };
+      
+      nodes.push(newNode);
+      renderNodes();
+      renderEdges();
+      renderMinimap();
+      
+      nodeLabelInput.value = '';
+    }
+
+    // Export functions - FIXED to avoid cross-origin issues
+    function exportAsImage() {
+      try {
+        // Create a new canvas to manually render the flowchart
+        const exportCanvas = document.createElement('canvas');
+        const flowWidth = flowchartContainer.offsetWidth;
+        const flowHeight = flowchartContainer.offsetHeight;
+        exportCanvas.width = flowWidth;
+        exportCanvas.height = flowHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+        
+        // Draw background
+        exportCtx.fillStyle = 'white';
+        exportCtx.fillRect(0, 0, flowWidth, flowHeight);
+        
+        // Draw grid pattern
+        exportCtx.fillStyle = '#d1d5db';
+        for (let x = 0; x < flowWidth; x += 20) {
+          for (let y = 0; y < flowHeight; y += 20) {
+            exportCtx.beginPath();
+            exportCtx.arc(x, y, 1, 0, Math.PI * 2);
+            exportCtx.fill();
+          }
+        }
+        
+        // Draw edges
+        edges.forEach(edge => {
+          const sourceNode = nodes.find(n => n.id === edge.source);
+          const targetNode = nodes.find(n => n.id === edge.target);
+          
+          if (sourceNode && targetNode) {
+            const sourceX = sourceNode.position.x + offset.x + 60;
+            const sourceY = sourceNode.position.y + offset.y + 25;
+            const targetX = targetNode.position.x + offset.x + 60;
+            const targetY = targetNode.position.y + offset.y + 25;
+            
+            // Draw line
+            exportCtx.beginPath();
+            exportCtx.moveTo(sourceX, sourceY);
+            exportCtx.lineTo(targetX, targetY);
+            exportCtx.strokeStyle = '#94a3b8';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            // Draw arrow
+            const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
+            const arrowLength = 10;
+            
+            exportCtx.beginPath();
+            exportCtx.moveTo(targetX, targetY);
+            exportCtx.lineTo(
+              targetX - arrowLength * Math.cos(angle - Math.PI / 6),
+              targetY - arrowLength * Math.sin(angle - Math.PI / 6)
+            );
+            exportCtx.lineTo(
+              targetX - arrowLength * Math.cos(angle + Math.PI / 6),
+              targetY - arrowLength * Math.sin(angle + Math.PI / 6)
+            );
+            exportCtx.closePath();
+            exportCtx.fillStyle = '#94a3b8';
+            exportCtx.fill();
+          }
+        });
+        
+        // Draw nodes
+        nodes.forEach(node => {
+          const x = node.position.x + offset.x;
+          const y = node.position.y + offset.y;
+          const width = 120;
+          const height = 50;
+          
+          // Draw node background
+          exportCtx.fillStyle = node.type === 'input' ? '#dbeafe' : 
+                               node.type === 'output' ? '#dcfce7' : 'white';
+          exportCtx.beginPath();
+          exportCtx.roundRect(x, y, width, height, 4);
+          exportCtx.fill();
+          
+          // Draw node border
+          exportCtx.strokeStyle = node.type === 'input' ? '#3b82f6' : 
+                                 node.type === 'output' ? '#22c55e' : '#94a3b8';
+          exportCtx.lineWidth = 1;
+          exportCtx.stroke();
+          
+          // Draw node text
+          exportCtx.fillStyle = 'black';
+          exportCtx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+          exportCtx.textAlign = 'center';
+          exportCtx.textBaseline = 'middle';
+          exportCtx.fillText(node.data.label, x + width / 2, y + height / 2);
+        });
+        
+        // Export the canvas
+        const link = document.createElement('a');
+        link.href = exportCanvas.toDataURL('image/png');
+        link.download = 'logistics-flowchart.png';
+        link.click();
+      } catch (error) {
+        console.error('Error exporting as PNG:', error);
+        alert('Failed to export as PNG. Please try another browser or check console for details.');
+      }
+    }
+
+    function exportAsPDF() {
+      try {
+        // Create a canvas the same way we did for PNG export
+        const exportCanvas = document.createElement('canvas');
+        const flowWidth = flowchartContainer.offsetWidth;
+        const flowHeight = flowchartContainer.offsetHeight;
+        exportCanvas.width = flowWidth;
+        exportCanvas.height = flowHeight;
+        const exportCtx = exportCanvas.getContext('2d');
+        
+        // Draw background
+        exportCtx.fillStyle = 'white';
+        exportCtx.fillRect(0, 0, flowWidth, flowHeight);
+        
+        // Draw grid pattern
+        exportCtx.fillStyle = '#d1d5db';
+        for (let x = 0; x < flowWidth; x += 20) {
+          for (let y = 0; y < flowHeight; y += 20) {
+            exportCtx.beginPath();
+            exportCtx.arc(x, y, 1, 0, Math.PI * 2);
+            exportCtx.fill();
+          }
+        }
+        
+        // Draw edges
+        edges.forEach(edge => {
+          const sourceNode = nodes.find(n => n.id === edge.source);
+          const targetNode = nodes.find(n => n.id === edge.target);
+          
+          if (sourceNode && targetNode) {
+            const sourceX = sourceNode.position.x + offset.x + 60;
+            const sourceY = sourceNode.position.y + offset.y + 25;
+            const targetX = targetNode.position.x + offset.x + 60;
+            const targetY = targetNode.position.y + offset.y + 25;
+            
+            // Draw line
+            exportCtx.beginPath();
+            exportCtx.moveTo(sourceX, sourceY);
+            exportCtx.lineTo(targetX, targetY);
+            exportCtx.strokeStyle = '#94a3b8';
+            exportCtx.lineWidth = 2;
+            exportCtx.stroke();
+            
+            // Draw arrow
+            const angle = Math.atan2(targetY - sourceY, targetX - sourceX);
+            const arrowLength = 10;
+            
+            exportCtx.beginPath();
+            exportCtx.moveTo(targetX, targetY);
+            exportCtx.lineTo(
+              targetX - arrowLength * Math.cos(angle - Math.PI / 6),
+              targetY - arrowLength * Math.sin(angle - Math.PI / 6)
+            );
+            exportCtx.lineTo(
+              targetX - arrowLength * Math.cos(angle + Math.PI / 6),
+              targetY - arrowLength * Math.sin(angle + Math.PI / 6)
+            );
+            exportCtx.closePath();
+            exportCtx.fillStyle = '#94a3b8';
+            exportCtx.fill();
+          }
+        });
+        
+        // Draw nodes
+        nodes.forEach(node => {
+          const x = node.position.x + offset.x;
+          const y = node.position.y + offset.y;
+          const width = 120;
+          const height = 50;
+          
+          // Draw node background
+          exportCtx.fillStyle = node.type === 'input' ? '#dbeafe' : 
+                               node.type === 'output' ? '#dcfce7' : 'white';
+          exportCtx.beginPath();
+          exportCtx.roundRect(x, y, width, height, 4);
+          exportCtx.fill();
+          
+          // Draw node border
+          exportCtx.strokeStyle = node.type === 'input' ? '#3b82f6' : 
+                                 node.type === 'output' ? '#22c55e' : '#94a3b8';
+          exportCtx.lineWidth = 1;
+          exportCtx.stroke();
+          
+          // Draw node text
+          exportCtx.fillStyle = 'black';
+          exportCtx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif';
+          exportCtx.textAlign = 'center';
+          exportCtx.textBaseline = 'middle';
+          exportCtx.fillText(node.data.label, x + width / 2, y + height / 2);
+        });
+
+        // Use jsPDF to create PDF
+        const { jsPDF } = window.jspdf;
+        const imgData = exportCanvas.toDataURL('image/png');
+        const pdf = new jsPDF('l', 'mm', 'a4');
+        pdf.addImage(imgData, 'PNG', 10, 10, 280, 150);
+        pdf.save('logistics-flowchart.pdf');
+      } catch (error) {
+        console.error('Error exporting as PDF:', error);
+        alert('Failed to export as PDF. Please try another browser or check console for details.');
+      }
+    }
+
+    async function saveToDatabase() {
+      try {
+        const response = await fetch('/api/save-flowchart', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ nodes, edges })
+        });
+        
+        if (response.ok) {
+          alert('Flowchart saved successfully!');
+        } else {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
+      } catch (error) {
+        console.error('Error saving flowchart:', error);
+        alert(`Failed to save flowchart: ${error.message || 'Unknown error occurred.'}`);
+      }
+    }
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initializeFlowchart);
+  </script>
+</body>
+</html>
