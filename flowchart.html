@@ -418,9 +418,9 @@
       exportPdfBtn.addEventListener('click', exportAsPDF);
       saveToDbBtn.addEventListener('click', saveToDatabase);
       
-      // Home button
+      // Home button - UPDATED WITH YOUR DASHBOARD LINK
       homeBtn.addEventListener('click', () => {
-        window.location.href = '/dashboard'; // Change this to your actual dashboard URL
+        window.location.href = 'https://ulugbek-lab.github.io/home-/';
       });
     }
 
@@ -479,7 +479,6 @@
       nodeLabelInput.value = '';
     }
 
-    // Export functions - FIXED to avoid cross-origin issues
     function exportAsImage() {
       try {
         // Create a new canvas to manually render the flowchart
