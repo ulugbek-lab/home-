@@ -48,6 +48,14 @@
       background-color: #2563eb;
     }
 
+    .home-button {
+      background-color: #6b7280;
+    }
+
+    .home-button:hover {
+      background-color: #4b5563;
+    }
+
     .input {
       padding: 0.5rem;
       border: 1px solid #d1d5db;
@@ -169,6 +177,7 @@
       <button id="exportPngBtn" class="button">Export as PNG</button>
       <button id="exportPdfBtn" class="button">Export as PDF</button>
       <button id="saveToDbBtn" class="button">Save to Database</button>
+      <button id="homeBtn" class="button home-button">Home</button>
     </div>
     <div id="flowchartContainer" class="flowchart-container">
       <div id="flowchart" class="flowchart">
@@ -232,6 +241,7 @@
     const exportPngBtn = document.getElementById('exportPngBtn');
     const exportPdfBtn = document.getElementById('exportPdfBtn');
     const saveToDbBtn = document.getElementById('saveToDbBtn');
+    const homeBtn = document.getElementById('homeBtn');
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomOutBtn = document.getElementById('zoomOutBtn');
     const resetViewBtn = document.getElementById('resetViewBtn');
@@ -407,6 +417,11 @@
       exportPngBtn.addEventListener('click', exportAsImage);
       exportPdfBtn.addEventListener('click', exportAsPDF);
       saveToDbBtn.addEventListener('click', saveToDatabase);
+      
+      // Home button
+      homeBtn.addEventListener('click', () => {
+        window.location.href = '/dashboard'; // Change this to your actual dashboard URL
+      });
     }
 
     function handleMouseMove(e) {
