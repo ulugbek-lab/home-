@@ -244,18 +244,29 @@
         
         <section class="assignments-section">
             <h2>Assignments</h2>
-            <!-- Logistics Map Chart Section -->
-            <form class="comment-form" id="logistics-map-form" style="margin-top: 15px;">
-                <button type="submit"><a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0">Logistics Map Chart</a></button>
-            </form>
-              <!-- Logistics Flowchart Section -->
-            <form class="comment-form" id="comment-form" style="margin-top: 15px;">
-                <button type="submit"><a href="flowchart.html">Logistics Flowchart</a></button>
-            </form>
-            <!-- Lead Time Variability Section -->
-            <form class="comment-form" id="lead-time-form" style="margin-top: 15px;">
-                <button type="submit"><a href="leadtime.html">Lead Time Variability</a></button>
-            </form>
+            <!-- Assignment Links Section with Proper Styling -->
+            <div style="display: flex; flex-direction: column; align-items: center; margin: 30px 0;">
+                <!-- Logistics Map Chart Section -->
+                <a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
+                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                        Logistics Map Chart
+                    </button>
+                </a>
+                
+                <!-- Logistics Flowchart Section -->
+                <a href="flowchart.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
+                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                        Logistics Flowchart
+                    </button>
+                </a>
+                
+                <!-- Lead Time Variability Section -->
+                <a href="leadtime.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
+                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                        Lead Time Variability
+                    </button>
+                </a>
+            </div>
             
             <div class="upload-area" id="upload-area">
                 <p>Drag and drop your files here or click to browse</p>
@@ -269,30 +280,7 @@
             </div>
             
             <div class="assignments-list" id="assignments-list">
-                <!-- Sample Assignment Items -->
-                <div class="assignment-item">
-                    <div class="assignment-info">
-                        <div class="assignment-icon">📄</div>
-                        <div class="assignment-details">
-                            <h3>Research Paper</h3>
-                            <p>Uploaded on March 20, 2025</p>
-                        </div>
-                    </div>
-                    <div class="assignment-actions">
-                    </div>
-                </div>
-                
-                <div class="assignment-item">
-                    <div class="assignment-info">
-                        <div class="assignment-icon">🔗</div>
-                        <div class="assignment-details">
-                            <h3>Project Website</h3>
-                            <p>Added on March 22, 2025</p>
-                        </div>
-                    </div>
-                    <div class="assignment-actions">
-                    </div>
-                </div>
+                <!-- Assignment items will be added dynamically when uploads happen -->
             </div>
         </section>
         
