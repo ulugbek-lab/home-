@@ -679,3 +679,13 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
                     ? "There is evidence of a Bullwhip Effect in your supply chain. Order variability exceeds customer demand variability, which could lead to excess inventory, stockouts, and increased costs." 
                     : "There is no evidence of a Bullwhip Effect in your supply chain. Order variability is proportional to or less than customer demand variability."}</p>
             `;
+        }
+        
+        // Function to render the chart based on the active tab
+        function renderChart() {
+            // Destroy existing chart if it exists
+            if (chart) {
+                chart.destroy();
+            }
+            
+            // Get the appropriate data based on the active tab
