@@ -222,29 +222,24 @@
             }
         }
         
-        /* Cursor tracking effect */
-        .cursor-effect {
+        /* Cursor tracking effect - Snake style */
+        .snake-segment {
             position: fixed;
-            width: 30px;
-            height: 30px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background-color: rgba(147, 51, 234, 0.3);
+            background-color: var(--highlight);
             pointer-events: none;
             transform: translate(-50%, -50%);
             z-index: 9999;
-            transition: transform 0.1s, width 0.3s, height 0.3s, background-color 0.3s;
+            transition: all 0.1s linear;
         }
         
-        .cursor-trail {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background-color: rgba(192, 132, 252, 0.5);
-            pointer-events: none;
-            transform: translate(-50%, -50%);
-            z-index: 9998;
-            transition: width 0.2s, height 0.2s, opacity 0.5s;
+        .snake-head {
+            width: 18px;
+            height: 18px;
+            background-color: var(--accent);
+            box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
         }
         
         /* Enhanced Buttons with Animation Effects */
@@ -293,7 +288,7 @@
     </style>
 </head>
 <body>
-    <div class="cursor-effect" id="cursor-effect"></div>
+    <div id="snake-container"></div>
     <div class="container">
         <header>
             <div class="user-info">
@@ -351,69 +346,92 @@
     </div>
     
     <script>
-        // Cursor tracking effect
-        const cursorEffect = document.getElementById('cursor-effect');
-        let trailElements = [];
-        const maxTrails = 10;
+        // Snake cursor effect
+        const snakeContainer = document.getElementById('snake-container');
+        const snakeLength = 15; // Number of segments in the snake
+        const snakeSegments = [];
+        const positions = []; // Array to store position history
         
-        // Create trail elements
-        for (let i = 0; i < maxTrails; i++) {
-            const trail = document.createElement('div');
-            trail.className = 'cursor-trail';
-            trail.style.opacity = 0;
-            document.body.appendChild(trail);
-            trailElements.push(trail);
+        // Create snake segments
+        for (let i = 0; i < snakeLength; i++) {
+            const segment = document.createElement('div');
+            segment.className = 'snake-segment';
+            if (i === 0) {
+                segment.classList.add('snake-head');
+            } else {
+                // Make segments gradually smaller
+                const size = Math.max(4, 12 - (i * 0.5));
+                segment.style.width = `${size}px`;
+                segment.style.height = `${size}px`;
+                // Make segments gradually more transparent
+                segment.style.opacity = 1 - (i / snakeLength * 0.7);
+            }
+            snakeContainer.appendChild(segment);
+            snakeSegments.push(segment);
+            
+            // Initialize positions array with default positions off-screen
+            positions.push({ x: -100, y: -100 });
         }
         
-        // Track mouse movement
+        // Track mouse movement for snake
         document.addEventListener('mousemove', (e) => {
-            // Update main cursor effect
-            cursorEffect.style.left = e.clientX + 'px';
-            cursorEffect.style.top = e.clientY + 'px';
+            // Add current position to the beginning of positions array
+            positions.unshift({ x: e.clientX, y: e.clientY });
             
-            // Create trail effect
-            const trail = trailElements.shift();
-            trail.style.left = e.clientX + 'px';
-            trail.style.top = e.clientY + 'px';
-            trail.style.opacity = 0.7;
-            trail.style.width = '6px';
-            trail.style.height = '6px';
+            // Remove excess positions
+            if (positions.length > snakeLength) {
+                positions.pop();
+            }
             
-            // Fade out trail gradually
-            setTimeout(() => {
-                trail.style.opacity = 0;
-            }, 100);
-            
-            trailElements.push(trail);
+            // Update each segment position
+            snakeSegments.forEach((segment, index) => {
+                if (index < positions.length) {
+                    segment.style.left = `${positions[index].x}px`;
+                    segment.style.top = `${positions[index].y}px`;
+                }
+            });
         });
         
-        // Hover effect on buttons
+        // Interactive hover effects for buttons
         document.querySelectorAll('.enhanced-button').forEach(button => {
             button.addEventListener('mouseenter', () => {
-                cursorEffect.style.width = '50px';
-                cursorEffect.style.height = '50px';
-                cursorEffect.style.backgroundColor = 'rgba(192, 132, 252, 0.4)';
+                // Make snake "excited" when hovering over buttons
+                snakeSegments.forEach(segment => {
+                    segment.style.backgroundColor = '#c084fc';
+                    segment.style.boxShadow = '0 0 15px rgba(192, 132, 252, 0.7)';
+                });
             });
             
             button.addEventListener('mouseleave', () => {
-                cursorEffect.style.width = '30px';
-                cursorEffect.style.height = '30px';
-                cursorEffect.style.backgroundColor = 'rgba(147, 51, 234, 0.3)';
+                // Return to normal state
+                snakeSegments.forEach((segment, index) => {
+                    if (index === 0) {
+                        segment.style.backgroundColor = 'var(--accent)';
+                    } else {
+                        segment.style.backgroundColor = 'var(--highlight)';
+                    }
+                    segment.style.boxShadow = index === 0 ? '0 0 10px rgba(147, 51, 234, 0.5)' : 'none';
+                });
             });
         });
         
-        // Hide cursor effect when mouse leaves window
+        // Hide snake when mouse leaves window
         document.addEventListener('mouseout', (e) => {
             if (e.relatedTarget === null) {
-                cursorEffect.style.opacity = 0;
-                trailElements.forEach(trail => {
-                    trail.style.opacity = 0;
+                snakeSegments.forEach(segment => {
+                    segment.style.opacity = '0';
                 });
             }
         });
         
         document.addEventListener('mouseover', () => {
-            cursorEffect.style.opacity = 1;
+            snakeSegments.forEach((segment, index) => {
+                if (index === 0) {
+                    segment.style.opacity = '1';
+                } else {
+                    segment.style.opacity = 1 - (index / snakeLength * 0.7);
+                }
+            });
         });
 
         // File Upload Functionality
