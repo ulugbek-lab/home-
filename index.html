@@ -191,87 +191,6 @@
             gap: 10px;
         }
         
-        .grade-btn {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .grade-btn:hover {
-            background-color: var(--highlight);
-            transform: scale(1.05);
-        }
-        
-        .comments-section {
-            background-color: var(--primary);
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .comments-list {
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .comment {
-            background-color: rgba(30, 41, 59, 0.7);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .comment-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-        }
-        
-        .comment-author {
-            font-weight: bold;
-            color: var(--highlight);
-        }
-        
-        .comment-date {
-            color: #a1a1aa;
-            font-size: 0.9rem;
-        }
-        
-        .comment-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-        
-        .comment-form input, .comment-form textarea {
-            padding: 12px;
-            border: 1px solid var(--accent);
-            border-radius: 5px;
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--text);
-        }
-        
-        .comment-form button {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-        }
-        
-        .comment-form button:hover {
-            background-color: var(--highlight);
-            transform: translateY(-3px);
-        }
-        
         /* Confetti Animation */
         .confetti-container {
             position: fixed;
@@ -360,7 +279,6 @@
                         </div>
                     </div>
                     <div class="assignment-actions">
-                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
                     </div>
                 </div>
                 
@@ -373,43 +291,9 @@
                         </div>
                     </div>
                     <div class="assignment-actions">
-                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
                     </div>
                 </div>
             </div>
-        </section>
-        
-        <section class="comments-section">
-            <h2>Comments</h2>
-            
-            <div class="comments-list" id="comments-list">
-                <!-- Sample Comments -->
-                <div class="comment">
-                    <div class="comment-header">
-                        <div class="comment-author">Professor Johnson</div>
-                        <div class="comment-date">March 21, 2025</div>
-                    </div>
-                    <div class="comment-content">
-                        Great progress on your research paper! Make sure to add more citations to the methodology section.
-                    </div>
-                </div>
-                
-                <div class="comment">
-                    <div class="comment-header">
-                        <div class="comment-author">TA Sarah</div>
-                        <div class="comment-date">March 22, 2025</div>
-                    </div>
-                    <div class="comment-content">
-                        Your project website looks good, but please fix the responsiveness issues on mobile devices.
-                    </div>
-                </div>
-            </div>
-            
-            <form class="comment-form" id="comment-form">
-                <input type="text" placeholder="Your Name" id="commenter-name" required>
-                <textarea placeholder="Leave your comment here..." id="comment-text" rows="4" required></textarea>
-                <button type="submit">Post Comment</button>
-            </form>
         </section>
         
         <footer>
@@ -466,7 +350,6 @@
                     </div>
                 </div>
                 <div class="assignment-actions">
-                    <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
                 </div>
             `;
             
@@ -505,7 +388,6 @@
                         </div>
                     </div>
                     <div class="assignment-actions">
-                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
                     </div>
                 `;
                 
@@ -513,90 +395,6 @@
                 linkInput.value = '';
             }
         });
-        
-        // Comment Form Functionality
-        const commentForm = document.getElementById('comment-form');
-        const commenterName = document.getElementById('commenter-name');
-        const commentText = document.getElementById('comment-text');
-        const commentsList = document.getElementById('comments-list');
-        
-        commentForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
-            if (commenterName.value.trim() !== '' && commentText.value.trim() !== '') {
-                const today = new Date();
-                const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                
-                const newComment = document.createElement('div');
-                newComment.className = 'comment';
-                newComment.innerHTML = `
-                    <div class="comment-header">
-                        <div class="comment-author">${commenterName.value.trim()}</div>
-                        <div class="comment-date">${dateString}</div>
-                    </div>
-                    <div class="comment-content">
-                        ${commentText.value.trim()}
-                    </div>
-                `;
-                
-                commentsList.appendChild(newComment);
-                commenterName.value = '';
-                commentText.value = '';
-            }
-        });
-        
-        // Grading Functionality with Confetti Animation
-        function gradeAssignment(btn) {
-            btn.textContent = 'Graded ✓';
-            btn.style.backgroundColor = '#22c55e';
-            btn.disabled = true;
-            
-            // Create and show confetti animation
-            showConfetti();
-        }
-        
-        function showConfetti() {
-            const confettiContainer = document.getElementById('confetti-container');
-            confettiContainer.style.display = 'block';
-            confettiContainer.innerHTML = '';
-            
-            const colors = ['#6b21a8', '#9333ea', '#a855f7', '#d8b4fe', '#ffffff'];
-            
-            // Create confetti pieces
-            for (let i = 0; i < 100; i++) {
-                const confetti = document.createElement('div');
-                confetti.className = 'confetti';
-                
-                // Random position
-                const left = Math.random() * 100;
-                
-                // Random color
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                
-                // Random size
-                const size = Math.random() * 10 + 5;
-                
-                // Random animation duration
-                const duration = Math.random() * 3 + 2;
-                
-                // Random shape
-                const shape = Math.random() > 0.5 ? 'square' : 'circle';
-                
-                confetti.style.left = `${left}%`;
-                confetti.style.backgroundColor = color;
-                confetti.style.width = `${size}px`;
-                confetti.style.height = `${size}px`;
-                confetti.style.borderRadius = shape === 'circle' ? '50%' : '0';
-                confetti.style.animation = `fall ${duration}s linear forwards`;
-                
-                confettiContainer.appendChild(confetti);
-            }
-            
-            // Hide confetti container after animation completes
-            setTimeout(() => {
-                confettiContainer.style.display = 'none';
-            }, 5000);
-        }
     </script>
 </body>
 </html>
