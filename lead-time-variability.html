@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Time Variability Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        :root {
+            --primary: #2d1b4e;
+            --secondary: #1e293b;
+            --accent: #6b21a8;
+            --text: #e2e8f0;
+            --highlight: #9333ea;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-info h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+        
+        .user-info p {
+            font-size: 1.2rem;
+            color: #a1a1aa;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--highlight), #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .analysis-section {
+            background-color: var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--highlight);
+            padding-bottom: 10px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--highlight);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(107, 33, 168, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .upload-area p {
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: var(--highlight);
+            transform: scale(1.05);
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .tab-button {
+            background-color: var(--secondary);
+            color: var(--text);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background-color: var(--accent);
+        }
+        
+        .tab-button:hover {
+            background-color: var(--highlight);
+        }
+        
+        .chart-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            height: 400px;
+        }
+        
+        .summary-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .summary-card {
+            background-color: white;
+            color: #333;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        
+        .summary-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: var(--accent);
+        }
+        
+        #loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #loading .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--highlight);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        #analysis-results {
+            display: none;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background-color: #2c3e50;
+            transform: translateX(-5px);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .summary-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="user-info">
+                <h1>Ulugbek</h1>
+                <p>ID: 2217841</p>
+            </div>
+            <div class="logo">Lead Time Variability</div>
+        </header>
+        
+        <main class="analysis-section">
+            <h2>Procurement Data Analysis</h2>
+            
+            <div class="upload-area" id="upload-area">
+                <p>Drag and drop your procurement data CSV file here or click to browse</p>
+                <button class="btn" id="browse-btn">Browse Files</button>
+                <input type="file" id="csv-file" accept=".csv" style="display: none;">
+                <p style="margin-top: 15px;">or</p>
+                <button class="btn" id="sample-data-btn">Use Sample Data</button>
+            </div>
+            
+            <div id="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Processing data...</p>
+            </div>
+            
+            <div id="analysis-results">
+                <div id="summary-section" class="summary-container"></div>
+                
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="suppliers">Suppliers</button>
+                    <button class="tab-button" data-tab="transportation">Transportation</button>
+                    <button class="tab-button" data-tab="months">Monthly</button>
+                    <button class="tab-button" data-tab="disruptions">Disruptions</button>
+                    <button class="tab-button" data-tab="categories">Categories</button>
+                    <button class="tab-button" data-tab="bullwhip">Bullwhip</button>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="analysis-chart"></canvas>
+                </div>
+                
+                <div id="bullwhip-details" style="display: none; background-color: white; color: #333; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="font-size: 1.2rem; margin-bottom: 10px; color: var(--accent);">Bullwhip Effect Details</h3>
+                    <div id="bullwhip-content"></div>
+                </div>
+            </div>
+            
+            <a href="index.html" class="back-btn">← Back to Dashboard</a>
+        </main>
+    </div>
+    
+    <script>
+        // DOM Elements
+        const uploadArea = document.getElementById('upload-area');
+        const browseBtn = document.getElementById('browse-btn');
+        const fileInput = document.getElementById('csv-file');
+        const sampleDataBtn = document.getElementById('sample-data-btn');
+        const loadingElement = document.getElementById('loading');
+        const analysisResults = document.getElementById('analysis-results');
+        const summarySection = document.getElementById('summary-section');
+        const tabButtons = document.querySelectorAll('.tab-button');
+        const chartCanvas = document.getElementById('analysis-chart');
+        const bullwhipDetails = document.getElementById('bullwhip-details');
+        const bullwhipContent = document.getElementById('bullwhip-content');
+        
+        // Chart instance
+        let chart = null;
+        
+        // Analysis data
+        let analysisData = null;
+        let activeTab = 'suppliers';
+        
+        // Sample CSV data - pre-filled with the provided data
+        const sampleCsvData = `Order_ID,Supplier,Order_Date,Expected_Delivery_Date,Actual_Delivery_Date,Product_Category,Transportation_Mode,Supplier_Location,Disruption_Type,Customer_Demand,Order_Quantity
+ORD1000,GammaCorp,2/27/24,3/8/24,3/11/24,Mechanical,Air,Korea,Customs,111,155
+ORD1001,Alpha Supplies,2/22/24,3/7/24,3/11/24,Raw Materials,Sea,China,Weather,109,117
+ORD1002,BetaTech,1/17/24,1/27/24,1/30/24,Electronics,Air,Germany,Customs,97,101
+ORD1003,GammaCorp,1/14/24,1/28/24,1/28/24,Raw Materials,Sea,Korea,None,102,138
+ORD1004,GammaCorp,8/2/24,8/12/24,8/15/24,Raw Materials,Air,Korea,Customs,120,123
+ORD1005,BetaTech,6/7/24,6/19/24,6/22/24,Electronics,Sea,Germany,Weather,103,110
+ORD1006,Alpha Supplies,4/5/24,4/13/24,4/16/24,Raw Materials,Air,China,Customs,105,116
+ORD1007,Alpha Supplies,7/1/24,7/11/24,7/12/24,Mechanical,Air,China,None,115,132
+ORD1008,GammaCorp,3/3/24,3/15/24,3/19/24,Mechanical,Sea,Korea,Weather,93,105
+ORD1009,BetaTech,5/11/24,5/23/24,5/27/24,Electronics,Sea,Germany,Production,109,112
+ORD1010,Alpha Supplies,10/4/24,10/14/24,10/16/24,Mechanical,Air,China,None,115,125
+ORD1011,GammaCorp,9/8/24,9/18/24,9/23/24,Raw Materials,Sea,Korea,Production,85,91
+ORD1012,BetaTech,11/10/24,11/20/24,11/26/24,Electronics,Air,Germany,Weather,98,115
+ORD1013,Alpha Supplies,12/6/24,12/16/24,12/19/24,Raw Materials,Sea,China,None,101,113
+ORD1014,GammaCorp,7/16/24,7/26/24,7/28/24,Mechanical,Air,Korea,None,104,117
+ORD1015,BetaTech,10/20/24,10/30/24,11/1/24,Electronics,Sea,Germany,None,91,97
+ORD1016,Alpha Supplies,1/15/24,1/25/24,1/28/24,Raw Materials,Air,China,None,103,109
+ORD1017,GammaCorp,4/29/24,5/9/24,5/13/24,Mechanical,Sea,Korea,Production,110,118
+ORD1018,BetaTech,6/23/24,7/3/24,7/6/24,Electronics,Air,Germany,None,88,94
+ORD1019,Alpha Supplies,8/25/24,9/4/24,9/8/24,Raw Materials,Sea,China,Weather,107,115
+ORD1020,GammaCorp,3/13/24,3/23/24,3/25/24,Mechanical,Air,Korea,None,93,99
+ORD1021,BetaTech,9/10/24,9/20/24,9/23/24,Electronics,Sea,Germany,None,95,103
+ORD1022,Alpha Supplies,11/15/24,11/25/24,12/1/24,Raw Materials,Air,China,Production,89,95
+ORD1023,GammaCorp,5/26/24,6/5/24,6/7/24,Mechanical,Sea,Korea,None,100,115
+ORD1024,BetaTech,2/14/24,2/24/24,2/27/24,Electronics,Air,Germany,None,112,132
+ORD1025,Alpha Supplies,4/11/24,4/21/24,4/24/24,Raw Materials,Sea,China,None,86,98
+ORD1026,GammaCorp,7/27/24,8/6/24,8/9/24,Mechanical,Air,Korea,None,99,104
+ORD1027,BetaTech,12/3/24,12/13/24,12/16/24,Electronics,Sea,Germany,None,97,112
+ORD1028,Alpha Supplies,1/30/24,2/9/24,2/12/24,Raw Materials,Air,China,None,108,117
+ORD1029,GammaCorp,6/15/24,6/25/24,6/27/24,Mechanical,Sea,Korea,None,90,102
+ORD1030,BetaTech,3/22/24,4/1/24,4/4/24,Electronics,Air,Germany,None,105,113
+ORD1031,Alpha Supplies,9/5/24,9/15/24,9/19/24,Raw Materials,Sea,China,Production,117,131
+ORD1032,GammaCorp,10/30/24,11/9/24,11/13/24,Mechanical,Air,Korea,Weather,88,96
+ORD1033,BetaTech,5/18/24,5/28/24,6/1/24,Electronics,Sea,Germany,Weather,98,106
+ORD1034,Alpha Supplies,7/21/24,7/31/24,8/2/24,Raw Materials,Air,China,None,109,115
+ORD1035,GammaCorp,2/6/24,2/16/24,2/19/24,Mechanical,Sea,Korea,None,93,101
+ORD1036,BetaTech,11/23/24,12/3/24,12/9/24,Electronics,Air,Germany,Weather,102,109
+ORD1037,Alpha Supplies,6/27/24,7/7/24,7/9/24,Raw Materials,Sea,China,None,115,124
+ORD1038,GammaCorp,4/3/24,4/13/24,4/16/24,Mechanical,Air,Korea,None,96,110
+ORD1039,BetaTech,8/14/24,8/24/24,8/27/24,Electronics,Sea,Germany,None,110,125
+ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,105`;
+        
+        // Event Listeners
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(107, 33, 168, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'transparent';
+            
+            if (e.dataTransfer.files.length) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+        
+        browseBtn.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+        
+        sampleDataBtn.addEventListener('click', () => {
+            processCSVData(sampleCsvData);
+        });
+        
+        // Tab button click events
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove active class from all buttons
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                button.classList.add('active');
+                
+                // Update active tab and render chart
+                activeTab = button.dataset.tab;
+                
+                // Hide/show bullwhip details
+                if (activeTab === 'bullwhip') {
+                    bullwhipDetails.style.display = 'block';
+                } else {
+                    bullwhipDetails.style.display = 'none';
+                }
+                
+                renderChart();
+            });
+        });
+        
+        // Utility functions
+        function showLoading() {
+            loadingElement.style.display = 'block';
+            analysisResults.style.display = 'none';
+        }
+        
+        function hideLoading() {
+            loadingElement.style.display = 'none';
+        }
+        
+        // Function to handle file upload
+        function handleFileUpload(file) {
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                alert('Please upload a CSV file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const csvContent = e.target.result;
+                processCSVData(csvContent);
+            };
+            reader.onerror = () => {
+                alert('Error reading the file.');
+                hideLoading();
+            };
+            
+            showLoading();
+            reader.readAsText(file);
+        }
+        
+        // Function to process CSV data
+        function processCSVData(csvContent) {
+            showLoading();
+            
+            // Parse CSV using Papa Parse
+            Papa.parse(csvContent, {
+                header: true,
+                dynamicTyping: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    try {
+                        // Analyze the data
+                        analysisData = analyzeData(results.data);
+                        
+                        // Render the results
+                        renderSummary();
+                        renderChart();
+                        
+                        // Show results
+                        hideLoading();
+                        analysisResults.style.display = 'block';
+                    } catch (error) {
+                        console.error("Analysis error:", error);
+                        alert("Error analyzing data. Please check the CSV format and try again.");
+                        hideLoading();
+                    }
+                },
+                error: (error) => {
+                    console.error('Error parsing CSV:', error);
+                    alert('Error parsing the CSV file. Please check the format.');
+                    hideLoading();
+                }
+            });
+        }
+        
+        // Function to analyze the data
+        function analyzeData(rawData) {
+            // Calculate lead times and delays
+            const dataWithLeadTimes = rawData.map(row => {
+                const orderDate = new Date(row.Order_Date);
+                const actualDeliveryDate = new Date(row.Actual_Delivery_Date);
+                const expectedDeliveryDate = new Date(row.Expected_Delivery_Date);
+                
+                const leadTime = Math.round((actualDeliveryDate - orderDate) / (1000 * 60 * 60 * 24));
+                const delay = Math.round((actualDeliveryDate - expectedDeliveryDate) / (1000 * 60 * 60 * 24));
+                const month = orderDate.toLocaleString('default', { month: 'long' });
+                
+                return {
+                    ...row,
+                    leadTime,
+                    delay,
+                    month
+                };
+            });
+            
+            // Calculate average function
+            const calculateAverage = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+            
+            // Supplier analysis
+            const supplierLeadTimes = {};
+            dataWithLeadTimes.forEach(row => {
+                if (!supplierLeadTimes[row.Supplier]) {
+                    supplierLeadTimes[row.Supplier] = [];
+                }
+                supplierLeadTimes[row.Supplier].push(row.leadTime);
+            });
+            
+            const supplierAvgLeadTimes = Object.entries(supplierLeadTimes).map(([supplier, times]) => ({
+                name: supplier,
+                value: calculateAverage(times)
+            })).sort((a, b) => b.value - a.value);
+            
+            // Transportation mode analysis
+            const transportModeLeadTimes = {};
+            dataWithLeadTimes.forEach(row => {
+                if (!transportModeLeadTimes[row.Transportation_Mode]) {
+                    transportModeLeadTimes[row.Transportation_Mode] = [];
+                }
+                transportModeLeadTimes[row.Transportation_Mode].push(row.leadTime);
+            });
+            
+            const transportModeAvgLeadTimes = Object.entries(transportModeLeadTimes).map(([mode, times]) => ({
+                name: mode,
+                value: calculateAverage(times)
+            })).sort((a, b) => a.value - b.value);
+            
+            // Monthly delay analysis
+            const monthlyDelays = {};
+            dataWithLeadTimes.forEach(row => {
+                if (!monthlyDelays[row.month]) {
+                    monthlyDelays[row.month] = [];
+                }
+                monthlyDelays[row.month].push(row.delay);
+            });
+            
+            const monthOrder = [
+                "January", "February", "March", "April", "May", "June", 
+                "July", "August", "September", "October", "November", "December"
+            ];
+            
+            const monthlyAvgDelays = Object.entries(monthlyDelays).map(([month, delays]) => ({
+                name: month,
+                value: calculateAverage(delays),
+                order: monthOrder.indexOf(month)
+            })).sort((a, b) => a.order - b.order);
+            
+            // Disruption type analysis
+            const disruptionDelays = {};
+            dataWithLeadTimes.forEach(row => {
+                if (!disruptionDelays[row.Disruption_Type]) {
+                    disruptionDelays[row.Disruption_Type] = [];
+                }
+                disruptionDelays[row.Disruption_Type].push(row.delay);
+            });
+            
+            const disruptionAvgDelays = Object.entries(disruptionDelays).map(([type, delays]) => ({
+                name: type,
+                value: calculateAverage(delays)
+            })).sort((a, b) => b.value - a.value);
+            
+            // Product category analysis
+            const categoryLeadTimes = {};
+            dataWithLeadTimes.forEach(row => {
+                if (!categoryLeadTimes[row.Product_Category]) {
+                    categoryLeadTimes[row.Product_Category] = [];
+                }
+                categoryLeadTimes[row.Product_Category].push(row.leadTime);
+            });
+            
+            const categoryAvgLeadTimes = Object.entries(categoryLeadTimes).map(([category, times]) => ({
+                name: category,
+                value: calculateAverage(times)
+            })).sort((a, b) => a.value - b.value);
+            
+            // Bullwhip effect analysis
+            const customerDemandValues = dataWithLeadTimes.map(row => row.Customer_Demand);
+            const orderQuantityValues = dataWithLeadTimes.map(row => row.Order_Quantity);
+            
+            const calculateCV = values => {
+                const avg = calculateAverage(values);
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                return stdDev / avg;
+            };
+            
+            const customerDemandCV = calculateCV(customerDemandValues);
+            const orderQuantityCV = calculateCV(orderQuantityValues);
+            const bullwhipRatio = orderQuantityCV / customerDemandCV;
+            
+            return {
+                supplierAvgLeadTimes,
+                transportModeAvgLeadTimes,
+                monthlyAvgDelays,
+                disruptionAvgDelays,
+                categoryAvgLeadTimes,
+                bullwhipAnalysis: {
+                    customerDemandCV,
+                    orderQuantityCV,
+                    bullwhipRatio,
+                    hasEffect: bullwhipRatio > 1
+                }
+            };
+        }
+        
+        // Function to render the summary section
+        function renderSummary() {
+            const { 
+                supplierAvgLeadTimes, 
+                transportModeAvgLeadTimes, 
+                monthlyAvgDelays, 
+                disruptionAvgDelays, 
+                categoryAvgLeadTimes,
+                bullwhipAnalysis 
+            } = analysisData;
+            
+            // Find month with highest delays
+            const highestDelayMonth = [...monthlyAvgDelays].sort((a, b) => b.value - a.value)[0];
+            
+            // Generate summary HTML
+            let summaryHTML = '';
+            
+            // Highest Avg Lead Time Supplier
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Highest Avg Lead Time Supplier</h3>
+                    <p>${supplierAvgLeadTimes[0].name} (${supplierAvgLeadTimes[0].value.toFixed(2)} days)</p>
+                </div>
+            `;
+            
+            // Lowest Avg Lead Time Transportation Mode
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Lowest Avg Lead Time Transport</h3>
+                    <p>${transportModeAvgLeadTimes[0].name} (${transportModeAvgLeadTimes[0].value.toFixed(2)} days)</p>
+                </div>
+            `;
+            
+            // Month with Highest Delays
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Month with Highest Avg Delays</h3>
+                    <p>${highestDelayMonth.name} (${highestDelayMonth.value.toFixed(2)} days)</p>
+                </div>
+            `;
+            
+            // Disruption with Longest Delays
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Disruption with Longest Delays</h3>
+                    <p>${disruptionAvgDelays[0].name} (${disruptionAvgDelays[0].value.toFixed(2)} days)</p>
+                </div>
+            `;
+            
+            // Product Category with Shortest Lead Time
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Product with Shortest Lead Time</h3>
+                    <p>${categoryAvgLeadTimes[0].name} (${categoryAvgLeadTimes[0].value.toFixed(2)} days)</p>
+                </div>
+            `;
+            
+            // Bullwhip Effect
+            summaryHTML += `
+                <div class="summary-card">
+                    <h3>Bullwhip Effect Present</h3>
+                    <p>${bullwhipAnalysis.hasEffect ? "Yes" : "No"} (Ratio: ${bullwhipAnalysis.bullwhipRatio.toFixed(2)})</p>
+                </div>
+            `;
+            
+            // Update the summary section
+            summarySection.innerHTML = summaryHTML;
+            
+            // Update bullwhip details
+            bullwhipContent.innerHTML = `
+                <p style="margin-bottom: 10px;">The Bullwhip Effect occurs when small variations in customer demand cause larger variations in orders placed with suppliers. This amplification moves upstream in the supply chain.</p>
+                
+                <p style="margin-bottom: 10px;"><strong>Customer Demand CV:</strong> ${bullwhipAnalysis.customerDemandCV.toFixed(4)}</p>
+                <p style="margin-bottom: 10px;"><strong>Order Quantity CV:</strong> ${bullwhipAnalysis.orderQuantityCV.toFixed(4)}</p>
+                <p style="margin-bottom: 10px;"><strong>Bullwhip Ratio:</strong> ${bullwhipAnalysis.bullwhipRatio.toFixed(4)}</p>
+                
+                <p><strong>Conclusion:</strong> ${bullwhipAnalysis.hasEffect 
+                    ? "There is evidence of a Bullwhip Effect in your supply chain. Order variability exceeds customer demand variability, which could lead to excess inventory, stockouts, and increased costs." 
+                    : "There is no evidence of a Bullwhip Effect in your supply chain. Order variability is proportional to or less than customer demand variability."}</p>
+            `;
