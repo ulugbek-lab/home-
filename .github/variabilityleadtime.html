@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Dashboard of Beki</title>
+    <style>
+        :root {
+            --primary: #2d1b4e;
+            --secondary: #1e293b;
+            --accent: #6b21a8;
+            --text: #e2e8f0;
+            --highlight: #9333ea;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--secondary);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .user-info h1 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+            color: var(--text);
+        }
+        
+        .user-info p {
+            font-size: 1.2rem;
+            color: #a1a1aa;
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, var(--highlight), #c084fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .assignments-section {
+            background-color: var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--highlight);
+            padding-bottom: 10px;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--highlight);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            background-color: rgba(107, 33, 168, 0.1);
+            transform: translateY(-5px);
+        }
+        
+        .upload-area p {
+            margin-bottom: 15px;
+        }
+        
+        .upload-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-btn:hover {
+            background-color: var(--highlight);
+            transform: scale(1.05);
+        }
+        
+        .link-input {
+            display: flex;
+            margin-top: 20px;
+        }
+        
+        .link-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--accent);
+            border-radius: 5px 0 0 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .link-input button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .link-input button:hover {
+            background-color: var(--highlight);
+        }
+        
+        .assignments-list {
+            margin-top: 30px;
+        }
+        
+        .assignment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: rgba(30, 41, 59, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .assignment-item:hover {
+            transform: translateX(5px);
+            box-shadow: -5px 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .assignment-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .assignment-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            color: var(--highlight);
+        }
+        
+        .assignment-details h3 {
+            margin-bottom: 5px;
+        }
+        
+        .assignment-details p {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+        }
+        
+        .assignment-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .grade-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .grade-btn:hover {
+            background-color: var(--highlight);
+            transform: scale(1.05);
+        }
+        
+        .comments-section {
+            background-color: var(--primary);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .comments-list {
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .comment {
+            background-color: rgba(30, 41, 59, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .comment-author {
+            font-weight: bold;
+            color: var(--highlight);
+        }
+        
+        .comment-date {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+        }
+        
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .comment-form input, .comment-form textarea {
+            padding: 12px;
+            border: 1px solid var(--accent);
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .comment-form button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .comment-form button:hover {
+            background-color: var(--highlight);
+            transform: translateY(-3px);
+        }
+        
+        /* Confetti Animation */
+        .confetti-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--highlight);
+            opacity: 0;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: #a1a1aa;
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti-container" id="confetti-container"></div>
+    
+    <div class="container">
+        <header>
+            <div class="user-info">
+                <h1>Ulugbek</h1>
+                <p>ID: 2217841</p>
+            </div>
+            <div class="logo">Main Dashboard of Beki</div>
+        </header>
+        
+        <section class="assignments-section">
+            <h2>Assignments</h2>
+            <form class="comment-form" id="comment-form">
+                <button type="submit"><a href="flowchart.html">Logistics Flowchart</a></button>
+            </form>
+            
+            <!-- Lead Time Variability Section -->
+            <form class="comment-form" id="lead-time-form" style="margin-top: 15px;">
+                <button type="submit"><a href="leadtime.html">Lead Time Variability</a></button>
+            </form>
+            
+            <div class="upload-area" id="upload-area">
+                <p>Drag and drop your files here or click to browse</p>
+                <button class="upload-btn">Upload Assignment</button>
+                <input type="file" id="file-upload" style="display: none;">
+            </div>
+            
+            <div class="link-input">
+                <input type="text" placeholder="Paste assignment link here..." id="link-input">
+                <button id="add-link-btn">Add Link</button>
+            </div>
+            
+            <div class="assignments-list" id="assignments-list">
+                <!-- Sample Assignment Items -->
+                <div class="assignment-item">
+                    <div class="assignment-info">
+                        <div class="assignment-icon">📄</div>
+                        <div class="assignment-details">
+                            <h3>Research Paper</h3>
+                            <p>Uploaded on March 20, 2025</p>
+                        </div>
+                    </div>
+                    <div class="assignment-actions">
+                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
+                    </div>
+                </div>
+                
+                <div class="assignment-item">
+                    <div class="assignment-info">
+                        <div class="assignment-icon">🔗</div>
+                        <div class="assignment-details">
+                            <h3>Project Website</h3>
+                            <p>Added on March 22, 2025</p>
+                        </div>
+                    </div>
+                    <div class="assignment-actions">
+                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="comments-section">
+            <h2>Comments</h2>
+            
+            <div class="comments-list" id="comments-list">
+                <!-- Sample Comments -->
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-author">Professor Johnson</div>
+                        <div class="comment-date">March 21, 2025</div>
+                    </div>
+                    <div class="comment-content">
+                        Great progress on your research paper! Make sure to add more citations to the methodology section.
+                    </div>
+                </div>
+                
+                <div class="comment">
+                    <div class="comment-header">
+                        <div class="comment-author">TA Sarah</div>
+                        <div class="comment-date">March 22, 2025</div>
+                    </div>
+                    <div class="comment-content">
+                        Your project website looks good, but please fix the responsiveness issues on mobile devices.
+                    </div>
+                </div>
+            </div>
+            
+            <form class="comment-form" id="comment-form">
+                <input type="text" placeholder="Your Name" id="commenter-name" required>
+                <textarea placeholder="Leave your comment here..." id="comment-text" rows="4" required></textarea>
+                <button type="submit">Post Comment</button>
+            </form>
+        </section>
+        
+        <footer>
+            © 2025 Ulugbek's Dashboard | All Rights Reserved
+        </footer>
+    </div>
+    
+    <script>
+        // File Upload Functionality
+        const uploadArea = document.getElementById('upload-area');
+        const fileUpload = document.getElementById('file-upload');
+        
+        uploadArea.addEventListener('click', () => {
+            fileUpload.click();
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'rgba(107, 33, 168, 0.2)';
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.style.backgroundColor = 'transparent';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = 'transparent';
+            
+            if (e.dataTransfer.files.length) {
+                handleFileUpload(e.dataTransfer.files[0]);
+            }
+        });
+        
+        fileUpload.addEventListener('change', (e) => {
+            if (e.target.files.length) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+        
+        function handleFileUpload(file) {
+            const assignmentsList = document.getElementById('assignments-list');
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            
+            const newAssignment = document.createElement('div');
+            newAssignment.className = 'assignment-item';
+            newAssignment.innerHTML = `
+                <div class="assignment-info">
+                    <div class="assignment-icon">📄</div>
+                    <div class="assignment-details">
+                        <h3>${file.name}</h3>
+                        <p>Uploaded on ${dateString}</p>
+                    </div>
+                </div>
+                <div class="assignment-actions">
+                    <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
+                </div>
+            `;
+            
+            assignmentsList.insertBefore(newAssignment, assignmentsList.firstChild);
+        }
+        
+        // Link Addition Functionality
+        const linkInput = document.getElementById('link-input');
+        const addLinkBtn = document.getElementById('add-link-btn');
+        
+        addLinkBtn.addEventListener('click', () => {
+            const link = linkInput.value.trim();
+            
+            if (link !== '') {
+                const assignmentsList = document.getElementById('assignments-list');
+                const today = new Date();
+                const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                // Extract domain name for title
+                let title;
+                try {
+                    const url = new URL(link);
+                    title = url.hostname.replace('www.', '');
+                } catch (e) {
+                    title = "Link Assignment";
+                }
+                
+                const newAssignment = document.createElement('div');
+                newAssignment.className = 'assignment-item';
+                newAssignment.innerHTML = `
+                    <div class="assignment-info">
+                        <div class="assignment-icon">🔗</div>
+                        <div class="assignment-details">
+                            <h3>${title}</h3>
+                            <p>Added on ${dateString}</p>
+                        </div>
+                    </div>
+                    <div class="assignment-actions">
+                        <button class="grade-btn" onclick="gradeAssignment(this)">Grade</button>
+                    </div>
+                `;
+                
+                assignmentsList.insertBefore(newAssignment, assignmentsList.firstChild);
+                linkInput.value = '';
+            }
+        });
+        
+        // Comment Form Functionality
+        const commentForm = document.getElementById('comment-form');
+        const commenterName = document.getElementById('commenter-name');
+        const commentText = document.getElementById('comment-text');
+        const commentsList = document.getElementById('comments-list');
+        
+        commentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (commenterName.value.trim() !== '' && commentText.value.trim() !== '') {
+                const today = new Date();
+                const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.innerHTML = `
+                    <div class="comment-header">
+                        <div class="comment-author">${commenterName.value.trim()}</div>
+                        <div class="comment-date">${dateString}</div>
+                    </div>
+                    <div class="comment-content">
+                        ${commentText.value.trim()}
+                    </div>
+                `;
+                
+                commentsList.appendChild(newComment);
+                commenterName.value = '';
+                commentText.value = '';
+            }
+        });
+        
+        // Grading Functionality with Confetti Animation
+        function gradeAssignment(btn) {
+            btn.textContent = 'Graded ✓';
+            btn.style.backgroundColor = '#22c55e';
+            btn.disabled = true;
+            
+            // Create and show confetti animation
+            showConfetti();
+        }
+        
+        function showConfetti() {
+            const confettiContainer = document.getElementById('confetti-container');
+            confettiContainer.style.display = 'block';
+            confettiContainer.innerHTML = '';
+            
+            const colors = ['#6b21a8', '#9333ea', '#a855f7', '#d8b4fe', '#ffffff'];
+            
+            // Create confetti pieces
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                // Random position
+                const left = Math.random() * 100;
+                
+                // Random color
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                // Random size
+                const size = Math.random() * 10 + 5;
+                
+                // Random animation duration
+                const duration = Math.random() * 3 + 2;
+                
+                // Random shape
+                const shape = Math.random() > 0.5 ? 'square' : 'circle';
+                
+                confetti.style.left = `${left}%`;
+                confetti.style.backgroundColor = color;
+                confetti.style.width = `${size}px`;
+                confetti.style.height = `${size}px`;
+                confetti.style.borderRadius = shape === 'circle' ? '50%' : '0';
+                confetti.style.animation = `fall ${duration}s linear forwards`;
+                
+                confettiContainer.appendChild(confetti);
+            }
+            
+            // Hide confetti container after animation completes
+            setTimeout(() => {
+                confettiContainer.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
