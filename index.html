@@ -222,6 +222,31 @@
             }
         }
         
+        /* Cursor tracking effect */
+        .cursor-effect {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: rgba(147, 51, 234, 0.3);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            transition: transform 0.1s, width 0.3s, height 0.3s, background-color 0.3s;
+        }
+        
+        .cursor-trail {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: rgba(192, 132, 252, 0.5);
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 9998;
+            transition: width 0.2s, height 0.2s, opacity 0.5s;
+        }
+        
         /* Enhanced Buttons with Animation Effects */
         .enhanced-button {
             width: 100%;
@@ -268,6 +293,7 @@
     </style>
 </head>
 <body>
+    <div class="cursor-effect" id="cursor-effect"></div>
     <div class="container">
         <header>
             <div class="user-info">
@@ -325,6 +351,71 @@
     </div>
     
     <script>
+        // Cursor tracking effect
+        const cursorEffect = document.getElementById('cursor-effect');
+        let trailElements = [];
+        const maxTrails = 10;
+        
+        // Create trail elements
+        for (let i = 0; i < maxTrails; i++) {
+            const trail = document.createElement('div');
+            trail.className = 'cursor-trail';
+            trail.style.opacity = 0;
+            document.body.appendChild(trail);
+            trailElements.push(trail);
+        }
+        
+        // Track mouse movement
+        document.addEventListener('mousemove', (e) => {
+            // Update main cursor effect
+            cursorEffect.style.left = e.clientX + 'px';
+            cursorEffect.style.top = e.clientY + 'px';
+            
+            // Create trail effect
+            const trail = trailElements.shift();
+            trail.style.left = e.clientX + 'px';
+            trail.style.top = e.clientY + 'px';
+            trail.style.opacity = 0.7;
+            trail.style.width = '6px';
+            trail.style.height = '6px';
+            
+            // Fade out trail gradually
+            setTimeout(() => {
+                trail.style.opacity = 0;
+            }, 100);
+            
+            trailElements.push(trail);
+        });
+        
+        // Hover effect on buttons
+        document.querySelectorAll('.enhanced-button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                cursorEffect.style.width = '50px';
+                cursorEffect.style.height = '50px';
+                cursorEffect.style.backgroundColor = 'rgba(192, 132, 252, 0.4)';
+            });
+            
+            button.addEventListener('mouseleave', () => {
+                cursorEffect.style.width = '30px';
+                cursorEffect.style.height = '30px';
+                cursorEffect.style.backgroundColor = 'rgba(147, 51, 234, 0.3)';
+            });
+        });
+        
+        // Hide cursor effect when mouse leaves window
+        document.addEventListener('mouseout', (e) => {
+            if (e.relatedTarget === null) {
+                cursorEffect.style.opacity = 0;
+                trailElements.forEach(trail => {
+                    trail.style.opacity = 0;
+                });
+            }
+        });
+        
+        document.addEventListener('mouseover', () => {
+            cursorEffect.style.opacity = 1;
+        });
+
         // File Upload Functionality
         const uploadArea = document.getElementById('upload-area');
         const fileUpload = document.getElementById('file-upload');
