@@ -222,17 +222,52 @@
             }
         }
         
-        footer {
-            text-align: center;
-            padding: 20px;
-            margin-top: 30px;
-            color: #a1a1aa;
+        /* Enhanced Buttons with Animation Effects */
+        .enhanced-button {
+            width: 100%;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(107, 33, 168, 0.3);
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: all 0.5s ease;
+        }
+        
+        .enhanced-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .enhanced-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(107, 33, 168, 0.5);
+            background-color: var(--highlight);
+        }
+        
+        .enhanced-button:hover:before {
+            left: 100%;
+        }
+        
+        .enhanced-button:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 15px rgba(107, 33, 168, 0.3);
         }
     </style>
 </head>
 <body>
-    <div class="confetti-container" id="confetti-container"></div>
-    
     <div class="container">
         <header>
             <div class="user-info">
@@ -244,25 +279,25 @@
         
         <section class="assignments-section">
             <h2>Assignments</h2>
-            <!-- Assignment Links Section with Proper Styling -->
+            <!-- Assignment Links Section with Enhanced Styling -->
             <div style="display: flex; flex-direction: column; align-items: center; margin: 30px 0;">
                 <!-- Logistics Map Chart Section -->
                 <a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                    <button class="enhanced-button">
                         Logistics Map Chart
                     </button>
                 </a>
                 
                 <!-- Logistics Flowchart Section -->
                 <a href="flowchart.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                    <button class="enhanced-button">
                         Logistics Flowchart
                     </button>
                 </a>
                 
                 <!-- Lead Time Variability Section -->
                 <a href="leadtime.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button style="width: 100%; background-color: var(--accent); color: white; border: none; padding: 15px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; transition: all 0.3s ease; font-weight: bold;">
+                    <button class="enhanced-button">
                         Lead Time Variability
                     </button>
                 </a>
