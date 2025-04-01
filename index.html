@@ -222,6 +222,61 @@
             }
         }
         
+        /* Submission status badge */
+        .status-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--secondary);
+        }
+        
+        .status-submitted {
+            background-color: #10b981; /* Green */
+            color: white;
+        }
+        
+        .status-pending {
+            background-color: #f59e0b; /* Amber */
+            color: white;
+        }
+        
+        /* Enhanced link container with position relative for badges */
+        .dynamic-link-container {
+            position: relative;
+        }
+        
+        /* Tooltip for status */
+        .tooltip {
+            position: absolute;
+            background-color: var(--primary);
+            color: var(--text);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            top: -40px;
+            right: 0;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 100;
+        }
+        
+        .dynamic-link-container:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
         /* Modal for editing names */
         .edit-modal {
             display: none;
@@ -397,6 +452,7 @@
     <!-- Context menu for right-click options -->
     <div class="context-menu" id="context-menu">
         <div class="context-menu-item" id="rename-option">Rename</div>
+        <div class="context-menu-item" id="toggle-status-option">Toggle Status</div>
         <div class="context-menu-item" id="delete-option">Delete</div>
     </div>
     
@@ -414,26 +470,38 @@
             <h2>Assignments</h2>
             <!-- Assignment Links Section with Enhanced Styling -->
             <div style="display: flex; flex-direction: column; align-items: center; margin: 30px 0;">
-                <!-- Logistics Map Chart Section -->
-                <a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button class="enhanced-button">
-                        Logistics Map Chart
-                    </button>
-                </a>
+                <!-- Logistics Map Chart Section (Submitted) -->
+                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
+                    <div class="tooltip">Status: Submitted</div>
+                    <div class="status-badge status-submitted" title="Submitted">✓</div>
+                    <a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0" style="text-decoration: none; width: 100%; display: block;">
+                        <button class="enhanced-button" data-status="submitted">
+                            Logistics Map Chart
+                        </button>
+                    </a>
+                </div>
                 
-                <!-- Logistics Flowchart Section -->
-                <a href="flowchart.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button class="enhanced-button">
-                        Logistics Flowchart
-                    </button>
-                </a>
+                <!-- Logistics Flowchart Section (Submitted) -->
+                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
+                    <div class="tooltip">Status: Submitted</div>
+                    <div class="status-badge status-submitted" title="Submitted">✓</div>
+                    <a href="flowchart.html" style="text-decoration: none; width: 100%; display: block;">
+                        <button class="enhanced-button" data-status="submitted">
+                            Logistics Flowchart
+                        </button>
+                    </a>
+                </div>
                 
-                <!-- Lead Time Variability Section -->
-                <a href="leadtime.html" style="text-decoration: none; margin-bottom: 15px; width: 100%; max-width: 400px;">
-                    <button class="enhanced-button">
-                        Lead Time Variability
-                    </button>
-                </a>
+                <!-- Lead Time Variability Section (Pending) -->
+                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
+                    <div class="tooltip">Status: Pending</div>
+                    <div class="status-badge status-pending" title="Pending">!</div>
+                    <a href="leadtime.html" style="text-decoration: none; width: 100%; display: block;">
+                        <button class="enhanced-button" data-status="pending">
+                            Lead Time Variability
+                        </button>
+                    </a>
+                </div>
             </div>
             
             <div id="dynamic-links" style="display: flex; flex-direction: column; align-items: center; margin: 20px 0;">
@@ -631,6 +699,19 @@
             linkContainer.style.maxWidth = '400px';
             linkContainer.style.marginBottom = '15px';
             
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = 'Status: Pending';
+            linkContainer.appendChild(tooltip);
+            
+            // Create status badge (default to pending for new items)
+            const badge = document.createElement('div');
+            badge.className = 'status-badge status-pending';
+            badge.textContent = '!';
+            badge.title = 'Pending';
+            linkContainer.appendChild(badge);
+            
             const linkElement = document.createElement('a');
             linkElement.href = url;
             linkElement.style.textDecoration = 'none';
@@ -648,6 +729,7 @@
             button.dataset.originalName = name;
             button.dataset.type = type;
             button.dataset.url = url;
+            button.dataset.status = 'pending'; // Default status for new items
             
             // Add context menu functionality
             button.addEventListener('contextmenu', (e) => {
@@ -663,6 +745,7 @@
         // Context menu functionality
         const contextMenu = document.getElementById('context-menu');
         const renameOption = document.getElementById('rename-option');
+        const toggleStatusOption = document.getElementById('toggle-status-option');
         const deleteOption = document.getElementById('delete-option');
         let activeElement = null;
         
@@ -722,6 +805,31 @@
             editModal.style.display = 'none';
         });
         
+        // Toggle status functionality
+        toggleStatusOption.addEventListener('click', () => {
+            if (activeElement) {
+                const container = activeElement.parentElement.parentElement;
+                const badge = container.querySelector('.status-badge');
+                const tooltip = container.querySelector('.tooltip');
+                
+                if (activeElement.dataset.status === 'pending') {
+                    // Change to submitted
+                    activeElement.dataset.status = 'submitted';
+                    badge.className = 'status-badge status-submitted';
+                    badge.textContent = '✓';
+                    badge.title = 'Submitted';
+                    tooltip.textContent = 'Status: Submitted';
+                } else {
+                    // Change to pending
+                    activeElement.dataset.status = 'pending';
+                    badge.className = 'status-badge status-pending';
+                    badge.textContent = '!';
+                    badge.title = 'Pending';
+                    tooltip.textContent = 'Status: Pending';
+                }
+            }
+        });
+        
         // Delete functionality
         deleteOption.addEventListener('click', () => {
             if (activeElement) {
@@ -730,13 +838,6 @@
                 if (container) {
                     container.remove();
                 }
-            }
-        });
-        
-        // Close modal when clicking outside
-        editModal.addEventListener('click', (e) => {
-            if (e.target === editModal) {
-                editModal.style.display = 'none';
             }
         });
     </script>
