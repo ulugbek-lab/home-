@@ -222,21 +222,28 @@
             }
         }
         
-        /* Submission status badge */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Submission status badge - ENHANCED VISIBILITY */
         .status-badge {
             position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 20px;
-            height: 20px;
+            top: -10px;
+            right: -10px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
             border: 2px solid var(--secondary);
+            z-index: 5;
         }
         
         .status-submitted {
@@ -473,7 +480,7 @@
                 <!-- Logistics Map Chart Section (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-submitted" title="Submitted">✓</div>
+                    <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
                     <a href="https://docs.google.com/document/d/1u0yLWqdfJHIAZCDzJZjO328tCz6prAHE0a1rQr90jTU/edit?tab=t.0" style="text-decoration: none; width: 100%; display: block;">
                         <button class="enhanced-button" data-status="submitted">
                             Logistics Map Chart
@@ -484,7 +491,7 @@
                 <!-- Logistics Flowchart Section (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-submitted" title="Submitted">✓</div>
+                    <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
                     <a href="flowchart.html" style="text-decoration: none; width: 100%; display: block;">
                         <button class="enhanced-button" data-status="submitted">
                             Logistics Flowchart
@@ -495,7 +502,7 @@
                 <!-- Lead Time Variability Section (Pending) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Pending</div>
-                    <div class="status-badge status-pending" title="Pending">!</div>
+                    <div class="status-badge status-pending" style="animation: pulse 1s infinite">!</div>
                     <a href="leadtime.html" style="text-decoration: none; width: 100%; display: block;">
                         <button class="enhanced-button" data-status="pending">
                             Lead Time Variability
@@ -710,6 +717,7 @@
             badge.className = 'status-badge status-pending';
             badge.textContent = '!';
             badge.title = 'Pending';
+            badge.style.animation = 'pulse 1s infinite';
             linkContainer.appendChild(badge);
             
             const linkElement = document.createElement('a');
@@ -819,6 +827,7 @@
                     badge.textContent = '✓';
                     badge.title = 'Submitted';
                     tooltip.textContent = 'Status: Submitted';
+                    badge.style.animation = 'pulse 2s infinite';
                 } else {
                     // Change to pending
                     activeElement.dataset.status = 'pending';
@@ -826,6 +835,7 @@
                     badge.textContent = '!';
                     badge.title = 'Pending';
                     tooltip.textContent = 'Status: Pending';
+                    badge.style.animation = 'pulse 1s infinite';
                 }
             }
         });
