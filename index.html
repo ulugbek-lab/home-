@@ -222,6 +222,100 @@
             }
         }
         
+        /* Modal for editing names */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--primary);
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content h3 {
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+        
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--accent);
+            border-radius: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+        
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .save-button {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .save-button:hover {
+            background-color: var(--highlight);
+        }
+        
+        .cancel-button {
+            background-color: #475569;
+            color: white;
+        }
+        
+        .cancel-button:hover {
+            background-color: #64748b;
+        }
+        
+        /* Context menu for right-click */
+        .context-menu {
+            display: none;
+            position: absolute;
+            background-color: var(--primary);
+            border-radius: 5px;
+            padding: 5px 0;
+            min-width: 120px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+        
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            color: var(--text);
+            transition: background-color 0.2s;
+        }
+        
+        .context-menu-item:hover {
+            background-color: var(--accent);
+        }
+        
         /* Cursor tracking effect - Snake style */
         .snake-segment {
             position: fixed;
@@ -288,6 +382,24 @@
     </style>
 </head>
 <body>
+    <!-- Edit name modal -->
+    <div class="edit-modal" id="edit-modal">
+        <div class="modal-content">
+            <h3>Edit Name</h3>
+            <input type="text" id="edit-name-input" placeholder="Enter new name">
+            <div class="modal-buttons">
+                <button class="modal-button cancel-button" id="cancel-edit">Cancel</button>
+                <button class="modal-button save-button" id="save-edit">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Context menu for right-click options -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" id="rename-option">Rename</div>
+        <div class="context-menu-item" id="delete-option">Delete</div>
+    </div>
+    
     <div id="snake-container"></div>
     <div class="container">
         <header>
@@ -324,6 +436,10 @@
                 </a>
             </div>
             
+            <div id="dynamic-links" style="display: flex; flex-direction: column; align-items: center; margin: 20px 0;">
+                <!-- Dynamically added links will appear here -->
+            </div>
+            
             <div class="upload-area" id="upload-area">
                 <p>Drag and drop your files here or click to browse</p>
                 <button class="upload-btn">Upload Assignment</button>
@@ -332,10 +448,12 @@
             
             <div class="link-input">
                 <input type="text" placeholder="Paste assignment link here..." id="link-input">
+                <input type="text" placeholder="Enter a name for this link..." id="link-name-input" style="flex: 1; padding: 10px; border: 1px solid var(--accent); border-radius: 5px; background-color: rgba(255, 255, 255, 0.1); color: var(--text); margin: 0 5px;">
                 <button id="add-link-btn">Add Link</button>
             </div>
             
-            <div class="assignments-list" id="assignments-list">
+            <!-- This is the empty assignments list that we'll keep for compatibility -->
+            <div class="assignments-list" id="assignments-list" style="display: none;">
                 <!-- Assignment items will be added dynamically when uploads happen -->
             </div>
         </section>
@@ -437,6 +555,7 @@
         // File Upload Functionality
         const uploadArea = document.getElementById('upload-area');
         const fileUpload = document.getElementById('file-upload');
+        const dynamicLinks = document.getElementById('dynamic-links');
         
         uploadArea.addEventListener('click', () => {
             fileUpload.click();
@@ -467,64 +586,157 @@
         });
         
         function handleFileUpload(file) {
-            const assignmentsList = document.getElementById('assignments-list');
-            const today = new Date();
-            const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+            // Create a blob URL for the file
+            const fileURL = URL.createObjectURL(file);
+            const fileName = file.name;
             
-            const newAssignment = document.createElement('div');
-            newAssignment.className = 'assignment-item';
-            newAssignment.innerHTML = `
-                <div class="assignment-info">
-                    <div class="assignment-icon">📄</div>
-                    <div class="assignment-details">
-                        <h3>${file.name}</h3>
-                        <p>Uploaded on ${dateString}</p>
-                    </div>
-                </div>
-                <div class="assignment-actions">
-                </div>
-            `;
-            
-            assignmentsList.insertBefore(newAssignment, assignmentsList.firstChild);
+            // Add as a button similar to the other assignment links
+            addDynamicLink(fileURL, fileName, 'file');
         }
         
         // Link Addition Functionality
         const linkInput = document.getElementById('link-input');
+        const linkNameInput = document.getElementById('link-name-input');
         const addLinkBtn = document.getElementById('add-link-btn');
         
         addLinkBtn.addEventListener('click', () => {
             const link = linkInput.value.trim();
+            let name = linkNameInput.value.trim();
             
             if (link !== '') {
-                const assignmentsList = document.getElementById('assignments-list');
-                const today = new Date();
-                const dateString = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-                
-                // Extract domain name for title
-                let title;
-                try {
-                    const url = new URL(link);
-                    title = url.hostname.replace('www.', '');
-                } catch (e) {
-                    title = "Link Assignment";
+                // If no name is provided, try to extract from URL or use a default
+                if (name === '') {
+                    try {
+                        const url = new URL(link);
+                        name = url.hostname.replace('www.', '');
+                    } catch (e) {
+                        name = "Link Assignment";
+                    }
                 }
                 
-                const newAssignment = document.createElement('div');
-                newAssignment.className = 'assignment-item';
-                newAssignment.innerHTML = `
-                    <div class="assignment-info">
-                        <div class="assignment-icon">🔗</div>
-                        <div class="assignment-details">
-                            <h3>${title}</h3>
-                            <p>Added on ${dateString}</p>
-                        </div>
-                    </div>
-                    <div class="assignment-actions">
-                    </div>
-                `;
+                // Add as a button similar to the other assignment links
+                addDynamicLink(link, name, 'link');
                 
-                assignmentsList.insertBefore(newAssignment, assignmentsList.firstChild);
+                // Clear the inputs
                 linkInput.value = '';
+                linkNameInput.value = '';
+            }
+        });
+        
+        // Function to add a new dynamic link/button
+        function addDynamicLink(url, name, type) {
+            const linkContainer = document.createElement('div');
+            linkContainer.className = 'dynamic-link-container';
+            linkContainer.style.width = '100%';
+            linkContainer.style.maxWidth = '400px';
+            linkContainer.style.marginBottom = '15px';
+            
+            const linkElement = document.createElement('a');
+            linkElement.href = url;
+            linkElement.style.textDecoration = 'none';
+            linkElement.style.width = '100%';
+            linkElement.style.display = 'block';
+            
+            // Set target="_blank" for external links
+            if (type === 'link' && url.startsWith('http')) {
+                linkElement.target = '_blank';
+            }
+            
+            const button = document.createElement('button');
+            button.className = 'enhanced-button';
+            button.textContent = name;
+            button.dataset.originalName = name;
+            button.dataset.type = type;
+            button.dataset.url = url;
+            
+            // Add context menu functionality
+            button.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                showContextMenu(e, button);
+            });
+            
+            linkElement.appendChild(button);
+            linkContainer.appendChild(linkElement);
+            dynamicLinks.appendChild(linkContainer);
+        }
+        
+        // Context menu functionality
+        const contextMenu = document.getElementById('context-menu');
+        const renameOption = document.getElementById('rename-option');
+        const deleteOption = document.getElementById('delete-option');
+        let activeElement = null;
+        
+        function showContextMenu(e, element) {
+            // Hide any existing context menu
+            contextMenu.style.display = 'none';
+            
+            // Save reference to element that was right-clicked
+            activeElement = element;
+            
+            // Position the context menu
+            contextMenu.style.left = `${e.clientX}px`;
+            contextMenu.style.top = `${e.clientY}px`;
+            
+            // Show the context menu
+            contextMenu.style.display = 'block';
+            
+            // Prevent normal context menu
+            return false;
+        }
+        
+        // Hide context menu when clicking elsewhere
+        document.addEventListener('click', () => {
+            contextMenu.style.display = 'none';
+        });
+        
+        // Rename functionality
+        const editModal = document.getElementById('edit-modal');
+        const editNameInput = document.getElementById('edit-name-input');
+        const saveEditBtn = document.getElementById('save-edit');
+        const cancelEditBtn = document.getElementById('cancel-edit');
+        
+        renameOption.addEventListener('click', () => {
+            if (activeElement) {
+                // Populate the edit input with current name
+                editNameInput.value = activeElement.textContent;
+                
+                // Show the edit modal
+                editModal.style.display = 'flex';
+            }
+        });
+        
+        saveEditBtn.addEventListener('click', () => {
+            if (activeElement && editNameInput.value.trim() !== '') {
+                // Update the button text with new name
+                activeElement.textContent = editNameInput.value.trim();
+                
+                // Save the new name in the data attribute
+                activeElement.dataset.originalName = editNameInput.value.trim();
+                
+                // Hide the modal
+                editModal.style.display = 'none';
+            }
+        });
+        
+        cancelEditBtn.addEventListener('click', () => {
+            editModal.style.display = 'none';
+        });
+        
+        // Delete functionality
+        deleteOption.addEventListener('click', () => {
+            if (activeElement) {
+                // Find the container element (parent of the <a> that contains the button)
+                const container = activeElement.parentElement.parentElement;
+                if (container) {
+                    container.remove();
+                }
+            }
+        });
+        
+        // Close modal when clicking outside
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) {
+                editModal.style.display = 'none';
             }
         });
     </script>
