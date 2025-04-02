@@ -368,6 +368,7 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
             }
         });
         
+        // Fix for the browse button
         browseBtn.addEventListener('click', () => {
             fileInput.click();
         });
@@ -378,7 +379,9 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
             }
         });
         
+        // Fix for the sample data button
         sampleDataBtn.addEventListener('click', () => {
+            // Directly process the sample data
             processCSVData(sampleCsvData);
         });
         
@@ -408,34 +411,40 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
         function showLoading() {
             loadingElement.style.display = 'block';
             analysisResults.style.display = 'none';
+            uploadArea.style.display = 'none'; // Hide upload area during loading
         }
         
         function hideLoading() {
             loadingElement.style.display = 'none';
+            // We don't show upload area again as we want to display results
         }
         
-        // Function to handle file upload
+        // Function to handle file upload - FIXED
         function handleFileUpload(file) {
             if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
                 alert('Please upload a CSV file.');
                 return;
             }
             
+            showLoading();
+            
             const reader = new FileReader();
+            
             reader.onload = (e) => {
                 const csvContent = e.target.result;
                 processCSVData(csvContent);
             };
+            
             reader.onerror = () => {
                 alert('Error reading the file.');
                 hideLoading();
+                uploadArea.style.display = 'block'; // Show upload area again on error
             };
             
-            showLoading();
             reader.readAsText(file);
         }
         
-        // Function to process CSV data
+        // Function to process CSV data - FIXED
         function processCSVData(csvContent) {
             showLoading();
             
@@ -446,6 +455,22 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
                 skipEmptyLines: true,
                 complete: (results) => {
                     try {
+                        if (!results.data || results.data.length === 0) {
+                            throw new Error("No data found in the CSV file.");
+                        }
+                        
+                        // Check if required columns exist
+                        const requiredColumns = ['Order_Date', 'Expected_Delivery_Date', 'Actual_Delivery_Date', 
+                                               'Supplier', 'Transportation_Mode', 'Disruption_Type', 
+                                               'Product_Category', 'Customer_Demand', 'Order_Quantity'];
+                        
+                        const missingColumns = requiredColumns.filter(col => 
+                            !results.meta.fields.includes(col));
+                        
+                        if (missingColumns.length > 0) {
+                            throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                        }
+                        
                         // Analyze the data
                         analysisData = analyzeData(results.data);
                         
@@ -458,14 +483,16 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
                         analysisResults.style.display = 'block';
                     } catch (error) {
                         console.error("Analysis error:", error);
-                        alert("Error analyzing data. Please check the CSV format and try again.");
+                        alert(`Error analyzing data: ${error.message}`);
                         hideLoading();
+                        uploadArea.style.display = 'block'; // Show upload area again on error
                     }
                 },
                 error: (error) => {
                     console.error('Error parsing CSV:', error);
-                    alert('Error parsing the CSV file. Please check the format.');
+                    alert(`Error parsing the CSV file: ${error.message}`);
                     hideLoading();
+                    uploadArea.style.display = 'block'; // Show upload area again on error
                 }
             });
         }
@@ -693,6 +720,132 @@ ORD1040,Alpha Supplies,3/9/24,3/19/24,3/22/24,Raw Materials,Air,China,None,97,10
             let chartTitle;
             let chartLabel;
             let chartColor;
+            let chartConfig = {};
             
             switch (activeTab) {
                 case 'suppliers':
+                    chartData = analysisData.supplierAvgLeadTimes;
+                    chartTitle = 'Average Lead Time by Supplier (Days)';
+                    chartLabel = 'Lead Time (Days)';
+                    chartColor = 'rgba(147, 51, 234, 0.8)';
+                    break;
+                case 'transportation':
+                    chartData = analysisData.transportModeAvgLeadTimes;
+                    chartTitle = 'Average Lead Time by Transport Mode (Days)';
+                    chartLabel = 'Lead Time (Days)';
+                    chartColor = 'rgba(59, 130, 246, 0.8)';
+                    break;
+                case 'months':
+                    chartData = analysisData.monthlyAvgDelays;
+                    chartTitle = 'Average Delays by Month (Days)';
+                    chartLabel = 'Delay (Days)';
+                    chartColor = 'rgba(234, 88, 12, 0.8)';
+                    break;
+                case 'disruptions':
+                    chartData = analysisData.disruptionAvgDelays;
+                    chartTitle = 'Average Delays by Disruption Type (Days)';
+                    chartLabel = 'Delay (Days)';
+                    chartColor = 'rgba(220, 38, 38, 0.8)';
+                    break;
+                case 'categories':
+                    chartData = analysisData.categoryAvgLeadTimes;
+                    chartTitle = 'Average Lead Time by Product Category (Days)';
+                    chartLabel = 'Lead Time (Days)';
+                    chartColor = 'rgba(16, 185, 129, 0.8)';
+                    break;
+                case 'bullwhip':
+                    // For bullwhip effect, we'll create a different type of chart
+                    const { customerDemandCV, orderQuantityCV } = analysisData.bullwhipAnalysis;
+                    chartData = {
+                        labels: ['Customer Demand', 'Order Quantity'],
+                        datasets: [{
+                            label: 'Coefficient of Variation',
+                            data: [customerDemandCV, orderQuantityCV],
+                            backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(220, 38, 38, 0.8)']
+                        }]
+                    };
+                    
+                    chartConfig = {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Bullwhip Effect Analysis',
+                                    font: {
+                                        size: 16
+                                    }
+                                },
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Coefficient of Variation'
+                                    }
+                                }
+                            }
+                        }
+                    };
+                    
+                    chart = new Chart(chartCanvas, chartConfig);
+                    return;
+            }
+            
+            // Create the bar chart configuration (for all tabs except bullwhip)
+            chartConfig = {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(item => item.name),
+                    datasets: [{
+                        label: chartLabel,
+                        data: chartData.map(item => item.value),
+                        backgroundColor: chartColor,
+                        borderColor: 'rgba(0, 0, 0, 0.1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: chartTitle,
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: chartLabel
+                            }
+                        }
+                    }
+                }
+            };
+            
+            chart = new Chart(chartCanvas, chartConfig);
+        }
+        
+        // Initialize the application - show upload area by default
+        document.addEventListener('DOMContentLoaded', () => {
+            // Make sure the upload area is visible and results are hidden
+            uploadArea.style.display = 'block';
+            analysisResults.style.display = 'none';
+            loadingElement.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
