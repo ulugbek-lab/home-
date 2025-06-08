@@ -530,15 +530,48 @@
                         </button>
                     </a>
                 </div>
-                 <!-- TSP Game Section (Submitted) -->
-                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
-                    <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
-                    <a href="https://autowman.github.io/umar/tsp_game.html" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
+                 <!-- TSP Game Section with Subsections (Submitted) -->
+                <div class="expandable-section">
+                    <div class="dynamic-link-container" style="position: relative;">
+                        <div class="tooltip">Status: Submitted</div>
+                        <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
+                        <button class="main-section-button" id="tsp-main-button">
                             TSP Game
+                            <span class="dropdown-arrow">▼</span>
                         </button>
-                    </a>
+                    </div>
+                    
+                    <div class="subsections" id="tsp-subsections">
+                        <!-- Game Manual Subsection -->
+                        <div class="subsection-item">
+                            <div class="subsection-status-badge status-pending">!</div>
+                            <a href="#" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    📖 Game Manual
+                                </button>
+                            </a>
+                        </div>
+                        
+                        <!-- Design Thinking Subsection -->
+                        <div class="subsection-item">
+                            <div class="subsection-status-badge status-pending">!</div>
+                            <a href="#" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    💡 Design Thinking
+                                </button>
+                            </a>
+                        </div>
+                        
+                        <!-- TSP Game Subsection -->
+                        <div class="subsection-item">
+                            <div class="subsection-status-badge status-submitted">✓</div>
+                            <a href="https://autowman.github.io/umar/tsp_game.html" target="_blank" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    🎮 TSP Game
+                                </button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
                 <!-- Problem Research Section (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
