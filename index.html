@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -442,6 +441,73 @@
             transform: translateY(0);
             box-shadow: 0 4px 15px rgba(107, 33, 168, 0.3);
         }
+        
+        /* Subsection Styles */
+        .section-group {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .main-section {
+            position: relative;
+        }
+        
+        .expand-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            transition: transform 0.3s ease;
+        }
+        
+        .expand-btn.expanded {
+            transform: translateY(-50%) rotate(180deg);
+        }
+        
+        .subsections {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .subsections.expanded {
+            max-height: 300px;
+        }
+        
+        .subsection-item {
+            padding: 0 10px 10px 10px;
+            margin-top: 10px;
+        }
+        
+        .subsection-button {
+            width: 100%;
+            background-color: rgba(107, 33, 168, 0.7);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-weight: normal;
+            box-shadow: 0 2px 8px rgba(107, 33, 168, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .subsection-button:hover {
+            background-color: rgba(147, 51, 234, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 33, 168, 0.4);
+        }
     </style>
 </head>
 <body>
@@ -521,52 +587,99 @@
                         </button>
                     </a>
                 </div>
-                 <!-- Design Thinking Section (Submitted) -->
-                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
-                    <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
-                    <a href="https://docs.google.com/document/d/1LJcWqIhnVQBmOD-MFpD3c_50Dz3e4SvUcRbPbiwPZJQ/edit?tab=t.0" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
-                            Design Thinking
-                        </button>
-                    </a>
+                
+                <!-- Design Thinking Section with Subsections -->
+                <div class="section-group">
+                    <div class="main-section">
+                        <div class="dynamic-link-container" style="width: 100%; position: relative;">
+                            <div class="tooltip">Status: Submitted</div>
+                            <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
+                            <a href="https://docs.google.com/document/d/1LJcWqIhnVQBmOD-MFpD3c_50Dz3e4SvUcRbPbiwPZJQ/edit?tab=t.0" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="enhanced-button" data-status="submitted">
+                                    Design Thinking
+                                </button>
+                            </a>
+                            <button class="expand-btn" onclick="toggleSubsections(this)">▼</button>
+                        </div>
+                    </div>
+                    <div class="subsections">
+                        <div class="subsection-item">
+                            <a href="#" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    Process Report
+                                </button>
+                            </a>
+                        </div>
+                        <div class="subsection-item">
+                            <a href="Battle pass.html" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    Battle Pass
+                                </button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
-                 <!-- TSP Game Section (Submitted) -->
-                <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
-                    <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
-                    <a href="https://autowman.github.io/umar/tsp_game.html" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
-                            TSP Game
-                        </button>
-                    </a>
+                
+                <!-- TSP Game Section with Subsections -->
+                <div class="section-group">
+                    <div class="main-section">
+                        <div class="dynamic-link-container" style="width: 100%; position: relative;">
+                            <div class="tooltip">Status: Submitted</div>
+                            <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
+                            <a href="https://autowman.github.io/umar/tsp_game.html" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="enhanced-button" data-status="submitted">
+                                    TSP Game
+                                </button>
+                            </a>
+                            <button class="expand-btn" onclick="toggleSubsections(this)">▼</button>
+                        </div>
+                    </div>
+                    <div class="subsections">
+                        <div class="subsection-item">
+                            <a href="#" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    Game Manuals
+                                </button>
+                            </a>
+                        </div>
+                        <div class="subsection-item">
+                            <a href="#" style="text-decoration: none; width: 100%; display: block;">
+                                <button class="subsection-button">
+                                    Design Thinking Step
+                                </button>
+                            </a>
+                        </div>
+                    </div>
                 </div>
+                
                 <!-- Problem Research Section (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
+                    <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
                     <a href="https://docs.google.com/document/d/143ECOwRAaYb2pWfxv9Qdy3D5l_G5c4uk1YCp6AVhUdI/edit?tab=t.0#heading=h.i197qkeur0o6" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
+                        <button class="enhanced-button" data-status="submitted">
                             Problem Research
                         </button>
                     </a>
                 </div>
-                 <!-- ABC Classification Section (Submitted) -->
+                
+                <!-- ABC Classification Section (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
+                    <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
                     <a href="https://docs.google.com/spreadsheets/d/1pjG2bDNVlxx_vFU7G7tfFbeb0oKQmW3jTWYTEIk-4y0/edit?gid=0#gid=0" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
+                        <button class="enhanced-button" data-status="submitted">
                             ABC Classification
                         </button>
                     </a>
                 </div>
-                 <!-- Counterfeit supplements (Submitted) -->
+                
+                <!-- Counterfeit supplements (Submitted) -->
                 <div class="dynamic-link-container" style="width: 100%; max-width: 400px; margin-bottom: 15px; position: relative;">
                     <div class="tooltip">Status: Submitted</div>
-                    <div class="status-badge status-Submitted" style="animation: pulse 2s infinite">✓</div>
+                    <div class="status-badge status-submitted" style="animation: pulse 2s infinite">✓</div>
                     <a href="https://docs.google.com/document/d/145NPZi6HFkq2j3ZDn7Ry6Yq-zPXg2wunb15s7YQe-TU/edit?tab=t.0" style="text-decoration: none; width: 100%; display: block;">
-                        <button class="enhanced-button" data-status="Submitted">
+                        <button class="enhanced-button" data-status="submitted">
                             Counterfeit Supplements
                         </button>
                     </a>
@@ -601,6 +714,20 @@
     </div>
     
     <script>
+        // Function to toggle subsections
+        function toggleSubsections(button) {
+            const subsections = button.parentElement.parentElement.nextElementSibling;
+            const isExpanded = subsections.classList.contains('expanded');
+            
+            if (isExpanded) {
+                subsections.classList.remove('expanded');
+                button.classList.remove('expanded');
+            } else {
+                subsections.classList.add('expanded');
+                button.classList.add('expanded');
+            }
+        }
+        
         // Snake cursor effect
         const snakeContainer = document.getElementById('snake-container');
         const snakeLength = 15; // Number of segments in the snake
